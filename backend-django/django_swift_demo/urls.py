@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse  # Import HttpResponse for a simple view
+from api_test.views import test_api  # Import the test_api view function
 
 # Define a simple view function
 def home(request):
@@ -24,5 +25,6 @@ def home(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'),  # Add a route for the home page
+    path('', home, name='home'),
+    path('api/test/', test_api, name='test_api'),  # Add the API route# Add a route for the home page
 ]
