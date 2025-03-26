@@ -28,8 +28,13 @@ struct ContentView: View {
             return
         }
 
+        var request = URLRequest(url: url)
+        request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning") // Add header to bypass warning
+
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
+                print("Error details: \(error)")
+                
                 DispatchQueue.main.async {
                     apiResponse = "Error: \(error.localizedDescription)"
                 }
@@ -54,3 +59,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
