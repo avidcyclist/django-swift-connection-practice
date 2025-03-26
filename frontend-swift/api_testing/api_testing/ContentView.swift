@@ -31,27 +31,30 @@ struct ContentView: View {
         var request = URLRequest(url: url)
         request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning") // Add header to bypass warning
 
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error details: \(error)")
-                
-                DispatchQueue.main.async {
-                    apiResponse = "Error: \(error.localizedDescription)"
-                }
-                return
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Error details: \(error)")
+            DispatchQueue.main.async {
+                apiResponse = "Error: \(error.localizedDescription)"
             }
+            return
+    }
 
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                DispatchQueue.main.async {
-                    apiResponse = responseString // Update the UI with the API response
-                }
-            } else {
-                DispatchQueue.main.async {
-                    apiResponse = "No data received"
-                }
-            }
+        if let httpResponse = response as? HTTPURLResponse {
+            print("HTTP Response: \(httpResponse)")
         }
 
+        if let data = data, let responseString = String(data: data, encoding: .utf8) {
+            print("Response: \(responseString)")
+            DispatchQueue.main.async {
+                apiResponse = responseString
+            }
+    } else {
+        DispatchQueue.main.async {
+            apiResponse = "No data received"
+        }
+    }
+}
         task.resume()
     }
 }
