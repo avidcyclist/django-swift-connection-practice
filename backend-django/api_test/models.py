@@ -20,7 +20,6 @@ class Workout(models.Model):
     
 class Phase(models.Model):
     name = models.CharField(max_length=100)
-    workouts = models.ManyToManyField(Workout)  # A phase can have multiple workouts
 
     def __str__(self):
         return self.name
@@ -44,3 +43,12 @@ class WorkoutLog(models.Model):
 
     def __str__(self):
         return f"{self.player.user.username} - {self.workout.exercise} - Set {self.set_number}"
+    
+class PhaseWorkout(models.Model):
+    phase = models.ForeignKey(Phase, on_delete=models.CASCADE, related_name="phase_workouts")  # Link to the phase
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
+    reps = models.IntegerField()  # Reps for this workout in the phase
+    sets = models.IntegerField()  # Sets for this workout in the phase
+
+    def __str__(self):
+        return f"{self.phase.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
