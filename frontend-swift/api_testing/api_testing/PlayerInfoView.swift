@@ -45,8 +45,12 @@ struct PlayerInfoView: View {
                 do {
                     if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                         DispatchQueue.main.async {
+                        // Format the data in a specific order
                             apiResponse = jsonArray.map { dict in
-                                dict.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+                                let name = dict["name"] as? String ?? "N/A"
+                                let age = dict["age"] as? Int ?? 0
+                                let team = dict["team"] as? String ?? "N/A"
+                                return "Name: \(name), Age: \(age), Team: \(team)"
                             }
                         }
                     }

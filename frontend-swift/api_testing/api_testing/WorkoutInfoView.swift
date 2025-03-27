@@ -45,8 +45,12 @@ struct WorkoutInfoView: View {
                 do {
                     if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                         DispatchQueue.main.async {
-                            apiResponse = jsonArray.map { dict in
-                                dict.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+                        // Format the data in a specific order
+                        apiResponse = jsonArray.map { dict in
+                            let exercise = dict["exercise"] as? String ?? "N/A"
+                            let reps = dict["reps"] as? Int ?? 0
+                            let sets = dict["sets"] as? Int ?? 0
+                            return "Exercise: \(exercise), Reps: \(reps), Sets: \(sets)"
                             }
                         }
                     }
