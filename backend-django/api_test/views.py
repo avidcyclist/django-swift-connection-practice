@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog
 from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer
 
@@ -42,6 +43,13 @@ def save_workout_log(request):
 
 @api_view(['GET'])
 def get_workout_logs(request, player_id):
+    player = get_object_or_404(Player, id=player_id)
     logs = WorkoutLog.objects.filter(player_id=player_id).order_by('-date')
     serializer = WorkoutLogSerializer(logs, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_players(request):
+    players = Player.objects.all()
+    serializer = PlayerSerializer(players, many=True)
     return Response(serializer.data)
