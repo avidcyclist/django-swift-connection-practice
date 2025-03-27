@@ -4,8 +4,9 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Player, Workout, PlayerPhase, Phase
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer
+from rest_framework import status
+from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -28,3 +29,19 @@ class PlayerPhaseView(APIView):
         player_phases = PlayerPhase.objects.filter(player__id=player_id)
         serializer = PlayerPhaseSerializer(player_phases, many=True)
         return Response(serializer.data)
+
+@api_view(['POST'])
+def save_workout_log(request):
+    print("Request data:", request.data)  # Log the incoming request data
+    serializer = WorkoutLogSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Workout log saved successfully!"}, status=status.HTTP_201_CREATED)
+    print("Validation errors:", serializer.errors)  # Log validation errors
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_workout_logs(request, player_id):
+    logs = WorkoutLog.objects.filter(player_id=player_id).order_by('-date')
+    serializer = WorkoutLogSerializer(logs, many=True)
+    return Response(serializer.data)

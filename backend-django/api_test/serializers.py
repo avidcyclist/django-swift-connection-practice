@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, Workout, Phase, PlayerPhase
+from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,3 +24,8 @@ class PlayerPhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerPhase
         fields = ['player', 'phase', 'start_date', 'end_date']        
+        
+class WorkoutLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkoutLog
+        fields = ['id', 'player', 'workout', 'set_number', 'weight', 'rpe', 'date']
