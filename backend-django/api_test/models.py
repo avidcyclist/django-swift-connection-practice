@@ -4,6 +4,7 @@ from django.contrib.auth.models import User  # Assuming Player is tied to the Us
 # Create your models here.
 
 class Player(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE) 
     name = models.CharField(max_length=100)
     age = models.IntegerField()
     team = models.CharField(max_length=100)
@@ -36,7 +37,7 @@ class PlayerPhase(models.Model):
         return f"{self.player.name} - {self.phase.name}" 
     
 class WorkoutLog(models.Model):
-    player = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to the player
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)  # Link to the player
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
     set_number = models.IntegerField()  # Set number
     weight = models.FloatField()  # Weight lifted
