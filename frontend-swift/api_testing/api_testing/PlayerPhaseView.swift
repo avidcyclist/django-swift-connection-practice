@@ -99,7 +99,12 @@ struct PlayerPhaseView: View {
                                     let exercise = dict["exercise"] as? String ?? "Unknown Exercise"
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
-                                    return WorkoutEntry(exercise: exercise, reps: reps, sets: sets, weight: Array(repeating: 0.0, count: sets), rpe: Array(repeating: 0.0, count: sets))
+                                    return WorkoutEntry(workoutId: dict["id"] as? Int ?? 0, // Assuming the backend sends the workout ID
+                                                        exercise: dict["exercise"] as? String ?? "Unknown Exercise",
+                                                        reps: dict["reps"] as? Int ?? 0,
+                                                        sets: dict["sets"] as? Int ?? 0,
+                                                        weight: Array(repeating: 0.0, count: sets),
+                                                        rpe: Array(repeating: 0.0, count: sets))
                                 }
                             } else {
                                 workouts = []
@@ -153,6 +158,7 @@ struct PlayerPhaseView: View {
 }
 
 struct WorkoutEntry {
+    var workoutId: Int?
     var exercise: String
     var reps: Int
     var sets: Int
