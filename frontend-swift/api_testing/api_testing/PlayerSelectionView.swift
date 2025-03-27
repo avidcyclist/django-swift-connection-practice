@@ -41,16 +41,22 @@ func fetchPlayers() {
     URLSession.shared.dataTask(with: url) { data, response, error in
         if let data = data {
             do {
-                // Decode the JSON response into a single player
-                let decodedPlayer = try JSONDecoder().decode(Player.self, from: data)
+                // Decode the JSON response into an array of players
+                let decodedPlayers = try JSONDecoder().decode([Player].self, from: data)
                 DispatchQueue.main.async {
-                    players = [(id: decodedPlayer.id, name: decodedPlayer.name)]
+                    // Since we expect only one player, take the first player from the array
+                    if let firstPlayer = decodedPlayers.first {
+                        players = [(id: firstPlayer.id, name: firstPlayer.name)]
+                    } else {
+                        print("No players found in the response.")
+                        players = []
+                    }
                 }
             } catch {
-                print("Error decoding player: \(error)")
+                print("Error decoding players: \(error)")
             }
         } else if let error = error {
-            print("Error fetching player: \(error)")
+            print("Error fetching players: \(error)")
         }
     }.resume()
 }

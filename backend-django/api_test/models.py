@@ -39,10 +39,9 @@ class PlayerPhase(models.Model):
 class WorkoutLog(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)  # Link to the player
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
-    set_number = models.IntegerField()  # Set number
-    weight = models.FloatField()  # Weight lifted
-    rpe = models.FloatField()  # Rate of Perceived Exertion
+    weights = models.JSONField()  # Weight lifted
+    rpe = models.JSONField()  # Rate of Perceived Exertion
     date = models.DateField(auto_now_add=True)  # Date of the log
 
     def __str__(self):
-        return f"{self.player.username} - {self.workout.exercise} - Set {self.set_number}"
+        return f"{self.player.user.username} - {self.workout.exercise} - Set {self.set_number}"

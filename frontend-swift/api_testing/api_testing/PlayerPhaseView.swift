@@ -130,7 +130,7 @@ struct PlayerPhaseView: View {
                 "rpe": Double(workout.rpe) ?? 0.0
             ]
             print("Sending request body: \(body)") // Debugging
-            
+
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
             URLSession.shared.dataTask(with: request) { data, response, error in
@@ -151,6 +151,6 @@ struct WorkoutEntry {
     var exercise: String
     var reps: Int
     var sets: Int
-    var weight: Double // Editable weight field
-    var rpe: Double    // Editable RPE field
+    var weight: [Double] // Editable weight field
+    var rpe: [Double]    // Editable RPE field
 }
