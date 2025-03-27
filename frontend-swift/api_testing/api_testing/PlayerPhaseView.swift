@@ -96,12 +96,13 @@ struct PlayerPhaseView: View {
 
                             if let phaseWorkoutsArray = (firstPhase["phase"] as? [String: Any])?["phase_workouts"] as? [[String: Any]] {
                                 workouts = phaseWorkoutsArray.map { dict in
-                                    let exercise = dict["exercise"] as? String ?? "Unknown Exercise"
-                                    let workoutId = (dict["workout"] as? [String: Any])?["id"] as? Int ?? 0
+                                    let workout = dict["workout"] as? [String: Any] ?? [:]
+                                    let exercise = workout["exercise"] as? String ?? "Unknown Exercise"
+                                    let workoutId = workout["id"] as? Int ?? 1
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
                                     return WorkoutEntry(
-                                                        workoutId: dict["id"] as? Int ?? 0, // Assuming the backend sends the workout ID
+                                                        workoutId: workoutId, // Assuming the backend sends the workout ID
                                                         exercise: exercise,
                                                         reps: reps,
                                                         sets: sets,
