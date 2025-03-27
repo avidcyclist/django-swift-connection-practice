@@ -28,4 +28,4 @@ class PlayerPhaseSerializer(serializers.ModelSerializer):
 class WorkoutLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutLog
-        fields = ['id', 'player', 'workout', 'set_number', 'weight', 'rpe', 'date']
+        fields = ['id', 'player', 'workout', 'weights', 'rpe', 'date']
