@@ -95,7 +95,8 @@ struct PlayerPhaseView: View {
                             }
 
                             if let workoutsArray = (firstPhase["phase"] as? [String: Any])?["workouts"] as? [[String: Any]] {
-                                workouts = workoutsArray.map { dict in
+                                workouts = phaseWorkoutsArray.map { dict in
+                                    let workout = dict["workout"] as? [String: Any] ?? [:]
                                     let exercise = dict["exercise"] as? String ?? "Unknown Exercise"
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
