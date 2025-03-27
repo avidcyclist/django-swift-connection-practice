@@ -28,16 +28,19 @@ struct PlayerPhaseView: View {
                         }
                         .font(.subheadline)
 
-                        HStack {
-                            TextField("Enter weight", value: $workouts[index].weight, format: .number )
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
-                                .frame(width: 100)
+                        ForEach(0..<workouts[index].sets, id: \.self) { setIndex in
+                            HStack {
+                                Text("Set \(setIndex + 1):")
+                                TextField("Enter weight", value: $workouts[index].weight[setIndex], format: .number)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.decimalPad)
+                                    .frame(width: 100)
 
-                            TextField("Enter RPE", value: $workouts[index].rpe, format: .number)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
-                                .frame(width: 100)
+                                TextField("Enter RPE", value: $workouts[index].rpe[setIndex], format: .number)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.decimalPad)
+                                    .frame(width: 100)
+                            }
                         }
                     }
                     .padding(.vertical, 8)
@@ -96,7 +99,7 @@ struct PlayerPhaseView: View {
                                     let exercise = dict["exercise"] as? String ?? "Unknown Exercise"
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
-                                    return WorkoutEntry(exercise: exercise, reps: reps, sets: sets, weight: 0.0, rpe: 0.0)
+                                    return WorkoutEntry(exercise: exercise, reps: reps, sets: sets, weight: Array(repeating: 0.0, count: sets), rpe: Array(repeating: 0.0, count: sets))
                                 }
                             } else {
                                 workouts = []
@@ -117,32 +120,34 @@ struct PlayerPhaseView: View {
     func saveWorkoutData() {
         guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
 
-        for (index, workout) in workouts.enumerated() {
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for workout in workouts {
+            for setIndex in 0..<workout.sets {
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-            let body: [String: Any] = [
-                "player": playerId,
-                "workout": index + 1, // Assuming workout IDs are sequential for now
-                "set_number": index + 1,
-                "weight": Double(workout.weight) ?? 0.0,
-                "rpe": Double(workout.rpe) ?? 0.0
-            ]
-            print("Sending request body: \(body)") // Debugging
+                let body: [String: Any] = [
+                    "player": playerId,
+                    "workout": workout.exercise,
+                    "set_number": setIndex + 1,
+                    "weight": workout.weight[setIndex],
+                    "rpe": workout.rpe[setIndex]
+                ]
+                print("Sending request body: \(body)") // Debugging
 
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+                request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    print("Error saving workout log: \(error.localizedDescription)")
-                    return
-                }
+                URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        print("Error saving workout log: \(error.localizedDescription)")
+                        return
+                    }
 
-                if let response = response as? HTTPURLResponse, response.statusCode == 201 {
-                    print("Workout log saved successfully!")
-                }
-            }.resume()
+                    if let response = response as? HTTPURLResponse, response.statusCode == 201 {
+                        print("Workout log saved successfully!")
+                    }
+                }.resume()
+            }
         }
     }
 }
@@ -151,6 +156,6 @@ struct WorkoutEntry {
     var exercise: String
     var reps: Int
     var sets: Int
-    var weight: [Double] // Editable weight field
-    var rpe: [Double]    // Editable RPE field
+    var weight: [Double] // Editable weight field for each set
+    var rpe: [Double]    // Editable RPE field for each set
 }
