@@ -94,10 +94,10 @@ struct PlayerPhaseView: View {
                                 phaseName = "Unknown Phase"
                             }
 
-                            if let workoutsArray = (firstPhase["phase"] as? [String: Any])?["workouts"] as? [[String: Any]] {
+                            if let phaseWorkoutsArray = (firstPhase["phase"] as? [String: Any])?["phase_workouts"] as? [[String: Any]] {
                                 workouts = phaseWorkoutsArray.map { dict in
-                                    let workout = dict["workout"] as? [String: Any] ?? [:]
                                     let exercise = dict["exercise"] as? String ?? "Unknown Exercise"
+                                    let workoutId = (dict["workout"] as? [String: Any])?["id"] as? Int ?? 0
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
                                     return WorkoutEntry(
