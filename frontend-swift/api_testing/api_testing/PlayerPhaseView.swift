@@ -98,7 +98,14 @@ struct PlayerPhaseView: View {
                                 workouts = phaseWorkoutsArray.map { dict in
                                     let workout = dict["workout"] as? [String: Any] ?? [:]
                                     let exercise = workout["exercise"] as? String ?? "Unknown Exercise"
-                                    let workoutId = workout["id"] as? Int ?? 1
+                                    let workoutId = workout["id"] as? Int ?? 0
+
+                                                                    // Add validation for workoutId
+                                    if workoutId == 0 {
+                                        print("Error: Missing or invalid workout ID for workout: \(workout)")
+                                        return nil // Skip invalid workouts
+                                    }
+
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
                                     return WorkoutEntry(
@@ -125,37 +132,48 @@ struct PlayerPhaseView: View {
         task.resume()
     }
 
-    func saveWorkoutData() {
-        guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
+func saveWorkoutData() {
+    guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
 
-        for workout in workouts {
-            for setIndex in 0..<workout.sets {
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    for workout in workouts {
+        for setIndex in 0..<workout.sets {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-                let body: [String: Any] = [
-                    "player": playerId,
-                    "workout": workout.workoutId,
-                    "set_number": setIndex + 1,
-                    "weight": workout.weight[setIndex],
-                    "rpe": workout.rpe[setIndex]
-                ]
-                print("Sending request body: \(body)") // Debugging
+            // Handle blank or default values
+            let weight = workout.weight[setIndex] > 0 ? workout.weight[setIndex] : nil
+            let rpe = workout.rpe[setIndex] > 0 ? workout.rpe[setIndex] : nil
 
-                request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            var body: [String: Any] = [
+                "player": playerId,
+                "workout": workout.workoutId,
+                "set_number": setIndex + 1
+            ]
 
-                URLSession.shared.dataTask(with: request) { data, response, error in
-                    if let error = error {
-                        print("Error saving workout log: \(error.localizedDescription)")
-                        return
-                    }
-
-                    if let response = response as? HTTPURLResponse, response.statusCode == 201 {
-                        print("Workout log saved successfully!")
-                    }
-                }.resume()
+            if let weight = weight {
+                body["weight"] = weight
             }
+            if let rpe = rpe {
+                body["rpe"] = rpe
+            }
+
+            print("Sending request body: \(body)") // Debugging
+
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Error saving workout log: \(error.localizedDescription)")
+                    return
+                }
+
+                if let response = response as? HTTPURLResponse, response.statusCode == 201 {
+                    print("Workout log saved successfully!")
+                } else {
+                    print("Failed to save workout log. Response: \(response.debugDescription)")
+                }
+            }.resume()
         }
     }
 }

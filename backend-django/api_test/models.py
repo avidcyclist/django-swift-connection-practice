@@ -37,8 +37,8 @@ class WorkoutLog(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
     set_number = models.IntegerField()  # Track the set number
-    weight = models.FloatField()  # Weight lifted in the set
-    rpe = models.FloatField()  # RPE for the set
+    weight = models.FloatField(null=True, blank=True)  # Weight lifted in the set
+    rpe = models.FloatField(null=True, blank=True)  # RPE for the set
     date = models.DateField(auto_now_add=True)
 
     def __str__(self):
