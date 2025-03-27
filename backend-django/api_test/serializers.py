@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, Workout
+from .models import Player, Workout, Phase, PlayerPhase
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,3 +10,17 @@ class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
         fields = ['exercise', 'reps', 'sets']  # Include the fields you want in the API response
+        
+class PhaseSerializer(serializers.ModelSerializer):
+    workouts = WorkoutSerializer(many=True)
+
+    class Meta:
+        model = Phase
+        fields = ['name', 'workouts']
+
+class PlayerPhaseSerializer(serializers.ModelSerializer):
+    phase = PhaseSerializer()
+
+    class Meta:
+        model = PlayerPhase
+        fields = ['player', 'phase', 'start_date', 'end_date']        

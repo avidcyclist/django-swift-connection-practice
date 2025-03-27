@@ -20,10 +20,17 @@ struct ContentView: View {
                     currentView = "WorkoutInfo"
                 }
                 .padding()
+
+                Button("Player Selection") {
+                    currentView = "PlayerSelection"
+                }
+                .padding()
             } else if currentView == "PlayerInfo" {
                 PlayerInfoView(onBack: { currentView = "Landing" }) // Navigate to Player Info
             } else if currentView == "WorkoutInfo" {
                 WorkoutInfoView(onBack: { currentView = "Landing" }) // Navigate to Workout Info
+            } else if currentView == "PlayerSelection" {
+                PlayerSelectionView(onBack: { currentView = "Landing" }) // Navigate to Player Selection
             }
         }
     }
