@@ -1,5 +1,13 @@
 import SwiftUI
 
+enum NavigationDestination: String, Hashable {
+    case myProfile = "MyProfile"
+    case workouts = "Workouts"
+    case throwing = "Throwing"
+    case nutrition = "Nutrition"
+    case recovery = "Recovery"
+}
+
 struct ContentView: View {
     @State private var playerId: Int = 1 // Hardcoded playerId for testing
 
@@ -13,42 +21,40 @@ struct ContentView: View {
 
                 // Navigation blocks
                 VStack(spacing: 20) {
-                    NavigationLink(value: "MyProfile") {
+                    NavigationLink(value: NavigationDestination.myProfile) {
                         BlockView(title: "My Profile", color: .blue)
                     }
 
-                    NavigationLink(value: "Workouts") {
+                    NavigationLink(value: NavigationDestination.workouts) {
                         BlockView(title: "Workouts", color: .green)
                     }
 
-                    NavigationLink(value: "Throwing") {
+                    NavigationLink(value: NavigationDestination.throwing) {
                         BlockView(title: "Throwing", color: .orange)
                     }
 
-                    NavigationLink(value: "Nutrition") {
+                    NavigationLink(value: NavigationDestination.nutrition) {
                         BlockView(title: "Nutrition", color: .purple)
                     }
 
-                    NavigationLink(value: "Recovery") {
+                    NavigationLink(value: NavigationDestination.recovery) {
                         BlockView(title: "Recovery", color: .red)
                     }
                 }
                 .padding()
             }
-            .navigationDestination(for: String.self) { view in
-                switch view {
-                case "MyProfile":
+            .navigationDestination(for: NavigationDestination.self) { destination in
+                switch destination {
+                case .myProfile:
                     MyProfileView()
-                case "Workouts":
+                case .workouts:
                     WorkoutsView(playerId: playerId) // Pass the hardcoded playerId here
-                case "Throwing":
+                case .throwing:
                     ThrowingView()
-                case "Nutrition":
+                case .nutrition:
                     NutritionView()
-                case "Recovery":
+                case .recovery:
                     RecoveryView()
-                default:
-                    Text("Unknown View")
                 }
             }
         }
