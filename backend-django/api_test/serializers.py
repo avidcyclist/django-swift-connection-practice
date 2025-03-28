@@ -9,17 +9,13 @@ class PlayerSerializer(serializers.ModelSerializer):
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
-        fields = ['exercise']  # Include the fields you want in the API response
+        fields = ['id', 'exercise']  # Include the fields you want in the API response
    
         
 class WorkoutLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutLog
-        fields = ['id', 'player', 'workout', 'set_number', 'weight', 'rpe', 'date']
-        extra_kwargs = {
-            'weight': {'required': False, 'allow_null': True},
-            'rpe': {'required': False, 'allow_null': True},
-        }
+        fields = ['id', 'player', 'workout', 'sets', 'date']  # Replace individual fields with 'sets'
         
 class PhaseWorkoutSerializer(serializers.ModelSerializer):
     workout = WorkoutSerializer()  # Include workout details

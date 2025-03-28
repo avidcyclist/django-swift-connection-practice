@@ -36,13 +36,11 @@ class PlayerPhase(models.Model):
 class WorkoutLog(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
-    set_number = models.IntegerField()  # Track the set number
-    weight = models.FloatField(null=True, blank=True)  # Weight lifted in the set
-    rpe = models.FloatField(null=True, blank=True)  # RPE for the set
+    sets = models.JSONField()  # Store all sets as a JSON object (e.g., [{"set_number": 1, "weight": 135, "rpe": 8}, ...])
     date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.player.user.username} - {self.workout.exercise} - Set {self.set_number}"
+        return f"{self.player.user.username} - {self.date} - {self.workout.exercise} - {self.sets}"
     
 class PhaseWorkout(models.Model):
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE, related_name="phase_workouts")  # Link to the phase

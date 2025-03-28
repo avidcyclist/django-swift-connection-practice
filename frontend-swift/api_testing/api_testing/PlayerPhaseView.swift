@@ -95,12 +95,12 @@ struct PlayerPhaseView: View {
                             }
 
                             if let phaseWorkoutsArray = (firstPhase["phase"] as? [String: Any])?["phase_workouts"] as? [[String: Any]] {
-                                workouts = phaseWorkoutsArray.map { dict in
+                                workouts = phaseWorkoutsArray.compactMap { dict in
                                     let workout = dict["workout"] as? [String: Any] ?? [:]
                                     let exercise = workout["exercise"] as? String ?? "Unknown Exercise"
                                     let workoutId = workout["id"] as? Int ?? 0
 
-                                                                    // Add validation for workoutId
+                                    // Add validation for workoutId
                                     if workoutId == 0 {
                                         print("Error: Missing or invalid workout ID for workout: \(workout)")
                                         return nil // Skip invalid workouts
@@ -109,12 +109,13 @@ struct PlayerPhaseView: View {
                                     let reps = dict["reps"] as? Int ?? 0
                                     let sets = dict["sets"] as? Int ?? 0
                                     return WorkoutEntry(
-                                                        workoutId: workoutId, // Assuming the backend sends the workout ID
-                                                        exercise: exercise,
-                                                        reps: reps,
-                                                        sets: sets,
-                                                        weight: Array(repeating: 0.0, count: sets),
-                                                        rpe: Array(repeating: 0.0, count: sets))
+                                        workoutId: workoutId,
+                                        exercise: exercise,
+                                        reps: reps,
+                                        sets: sets,
+                                        weight: Array(repeating: 0.0, count: sets),
+                                        rpe: Array(repeating: 0.0, count: sets)
+                                    )
                                 }
                             } else {
                                 workouts = []
@@ -133,47 +134,47 @@ struct PlayerPhaseView: View {
     }
 
 func saveWorkoutData() {
-    guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
+        guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
 
-    for workout in workouts {
-        for setIndex in 0..<workout.sets {
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for workout in workouts {
+            for setIndex in 0..<workout.sets {
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-            // Handle blank or default values
-            let weight = workout.weight[setIndex] > 0 ? workout.weight[setIndex] : nil
-            let rpe = workout.rpe[setIndex] > 0 ? workout.rpe[setIndex] : nil
+        // Create an array of sets
+                let sets = (0..<workout.sets).map { setIndex in
+                    return [
+                    "set_number": setIndex + 1,
+                    "weight": workout.weight[setIndex],
+                    "rpe": workout.rpe[setIndex]
+                ]
+            }
 
-            var body: [String: Any] = [
-                "player": playerId,
-                "workout": workout.workoutId,
-                "set_number": setIndex + 1
+        // Create the request body
+                let body: [String: Any] = [
+                    "player": playerId,
+                    "workout": workout.workoutId,
+                    "sets": sets
             ]
 
-            if let weight = weight {
-                body["weight"] = weight
+                print("Sending request body: \(body)") // Debugging
+
+                request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+                URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        print("Error saving workout log: \(error.localizedDescription)")
+                        return
+                    }
+
+                    if let response = response as? HTTPURLResponse, response.statusCode == 201 {
+                        print("Workout log saved successfully!")
+                    } else {
+                        print("Failed to save workout log. Response: \(response.debugDescription)")
+                    }
+                }.resume()
             }
-            if let rpe = rpe {
-                body["rpe"] = rpe
-            }
-
-            print("Sending request body: \(body)") // Debugging
-
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    print("Error saving workout log: \(error.localizedDescription)")
-                    return
-                }
-
-                if let response = response as? HTTPURLResponse, response.statusCode == 201 {
-                    print("Workout log saved successfully!")
-                } else {
-                    print("Failed to save workout log. Response: \(response.debugDescription)")
-                }
-            }.resume()
         }
     }
 }
