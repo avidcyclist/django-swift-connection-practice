@@ -1,58 +1,100 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedView: String? = nil // Tracks the selected view
+    @State private var playerId: Int? = nil // State to store the playerId
+    @State private var isLoading: Bool = true // State to show loading indicator
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Text("Welcome, Athlete!")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+            if isLoading {
+                ProgressView("Loading player data...") // Show a loading spinner while fetching playerId
                     .padding()
-
-                // Navigation blocks
+            } else if let playerId = playerId {
                 VStack(spacing: 20) {
-                    NavigationLink(value: "MyProfile") {
-                        BlockView(title: "My Profile", color: .blue)
-                    }
+                    Text("Welcome, Athlete!")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding()
 
-                    NavigationLink(value: "Workouts") {
-                        BlockView(title: "Workouts", color: .green)
-                    }
+                    // Navigation blocks
+                    VStack(spacing: 20) {
+                        NavigationLink(value: "MyProfile") {
+                            BlockView(title: "My Profile", color: .blue)
+                        }
 
-                    NavigationLink(value: "Throwing") {
-                        BlockView(title: "Throwing", color: .orange)
-                    }
+                        NavigationLink(value: "Workouts") {
+                            BlockView(title: "Workouts", color: .green)
+                        }
 
-                    NavigationLink(value: "Nutrition") {
-                        BlockView(title: "Nutrition", color: .purple)
-                    }
+                        NavigationLink(value: "Throwing") {
+                            BlockView(title: "Throwing", color: .orange)
+                        }
 
-                    NavigationLink(value: "Recovery") {
-                        BlockView(title: "Recovery", color: .red)
+                        NavigationLink(value: "Nutrition") {
+                            BlockView(title: "Nutrition", color: .purple)
+                        }
+
+                        NavigationLink(value: "Recovery") {
+                            BlockView(title: "Recovery", color: .red)
+                        }
+                    }
+                    .padding()
+                }
+                .navigationDestination(for: String.self) { view in
+                    switch view {
+                    case "MyProfile":
+                        MyProfileView()
+                    case "Workouts":
+                        WorkoutsView(playerId: playerId) // Pass the dynamic playerId here
+                    case "Throwing":
+                        ThrowingView()
+                    case "Nutrition":
+                        NutritionView()
+                    case "Recovery":
+                        RecoveryView()
+                    default:
+                        Text("Unknown View")
                     }
                 }
-                .padding()
-            }
-            .navigationDestination(for: String.self) { view in
-                switch view {
-                case "MyProfile":
-                    MyProfileView()
-                case "Workouts":
-                    WorkoutsView(playerId: 1, onBack: {}) // Updated to use WorkoutsView
-                case "Throwing":
-                    ThrowingView()
-                case "Nutrition":
-                    NutritionView()
-                case "Recovery":
-                    RecoveryView()
-                default:
-                    Text("Unknown View")
-                }
+            } else {
+                Text("Failed to load player data.")
+                    .foregroundColor(.red)
             }
         }
+        .onAppear {
+            fetchPlayerId() // Fetch the playerId when the view appears
+        }
     }
+
+func fetchPlayerId() {
+    guard let url = URL(string: "https://your-backend-url/api/player-id/") else {
+        self.isLoading = false
+        return
+    }
+
+    URLSession.shared.dataTask(with: url) { data, response, error in
+        if let error = error {
+            print("Error fetching playerId: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+            return
+        }
+
+        if let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+           let id = json["playerId"] as? Int {
+            DispatchQueue.main.async {
+                self.playerId = id
+                self.isLoading = false
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+        }
+    }.resume()
+
+}
 }
 
 // A reusable block view for navigation

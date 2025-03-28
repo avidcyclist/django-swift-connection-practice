@@ -204,3 +204,5 @@ struct WorkoutEntry {
     var weight: [Double] // Editable weight field for each set
     var rpe: [Double]    // Editable RPE field for each set
 }
+    
+    }
