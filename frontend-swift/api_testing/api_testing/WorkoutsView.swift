@@ -1,11 +1,10 @@
 import SwiftUI
 
-struct PlayerPhaseView: View {
+struct WorkoutsView: View {
     let playerId: Int
     @State private var phaseName: String = "Loading..."
     @State private var workouts: [WorkoutEntry] = [] // Updated to use WorkoutEntry for editable fields
     @State private var showSuccessAlert: Bool = false // State for showing success alert
-    let onBack: () -> Void
 
     var body: some View {
         VStack {
@@ -56,10 +55,6 @@ struct PlayerPhaseView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
 
-            Button("Back") {
-                onBack()
-            }
-            .padding()
         }
         .onAppear {
             fetchPlayerPhase()
