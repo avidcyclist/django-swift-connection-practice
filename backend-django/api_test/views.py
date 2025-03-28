@@ -33,12 +33,13 @@ class PlayerPhaseView(APIView):
 
 @api_view(['POST'])
 def save_workout_log(request):
-    print("Request data:", request.data)  # Log the incoming request data
+    print("Request data:", request.data)  # Debugging
+
     serializer = WorkoutLogSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response({"message": "Workout log saved successfully!"}, status=status.HTTP_201_CREATED)
-    print("Validation errors:", serializer.errors)  # Log validation errors
+    print("Validation errors:", serializer.errors)  # Debugging
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])

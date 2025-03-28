@@ -15,7 +15,7 @@ class WorkoutSerializer(serializers.ModelSerializer):
 class WorkoutLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutLog
-        fields = ['id', 'player', 'workout', 'sets', 'date']  # Replace individual fields with 'sets'
+        fields = ['id', 'player', 'date', 'exercises']  # Replace individual fields with 'sets'
         
 class PhaseWorkoutSerializer(serializers.ModelSerializer):
     workout = WorkoutSerializer()  # Include workout details
