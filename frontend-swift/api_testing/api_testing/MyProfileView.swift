@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct PlayerInfoView: View {
+
+struct MyProfileView: View {
     @State private var apiResponse: [String] = [] // State variable to store API response
-    let onBack: () -> Void // Callback for the back button
 
     var body: some View {
         VStack {
@@ -13,11 +13,6 @@ struct PlayerInfoView: View {
             List(apiResponse, id: \.self) { item in
                 Text(item)
             }
-
-            Button("Back") {
-                onBack()
-            }
-            .padding()
         }
         .onAppear {
             fetchAPIResponse(endpoint: "player-info")
@@ -45,7 +40,6 @@ struct PlayerInfoView: View {
                 do {
                     if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                         DispatchQueue.main.async {
-                        // Format the data in a specific order
                             apiResponse = jsonArray.map { dict in
                                 let name = dict["name"] as? String ?? "N/A"
                                 let age = dict["age"] as? Int ?? 0

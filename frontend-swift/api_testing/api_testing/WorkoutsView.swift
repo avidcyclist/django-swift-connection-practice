@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WorkoutInfoView: View {
+struct WorkoutsView: View {
     @State private var apiResponse: [String] = [] // State variable to store API response
     let onBack: () -> Void // Callback for the back button
 

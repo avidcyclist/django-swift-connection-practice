@@ -1,37 +1,99 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var currentView: String = "Landing" // Tracks which view to display
+    @State private var selectedView: String? = nil // Tracks the selected view
 
     var body: some View {
-        VStack {
-            if currentView == "Landing" {
-                // Landing Screen
-                Text("Welcome to the App!")
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Welcome, Athlete!")
                     .font(.largeTitle)
+                    .fontWeight(.bold)
                     .padding()
 
-                Button("Player Info") {
-                    currentView = "PlayerInfo"
-                }
-                .padding()
+                // Navigation blocks
+                VStack(spacing: 20) {
+                    NavigationLink(value: "MyProfile") {
+                        BlockView(title: "My Profile", color: .blue)
+                    }
 
-                Button("Workout Info") {
-                    currentView = "WorkoutInfo"
-                }
-                .padding()
+                    NavigationLink(value: "Workouts") {
+                        BlockView(title: "Workouts", color: .green)
+                    }
 
-                Button("Player Selection") {
-                    currentView = "PlayerSelection"
+                    NavigationLink(value: "Throwing") {
+                        BlockView(title: "Throwing", color: .orange)
+                    }
+
+                    NavigationLink(value: "Nutrition") {
+                        BlockView(title: "Nutrition", color: .purple)
+                    }
+
+                    NavigationLink(value: "Recovery") {
+                        BlockView(title: "Recovery", color: .red)
+                    }
                 }
                 .padding()
-            } else if currentView == "PlayerInfo" {
-                PlayerInfoView(onBack: { currentView = "Landing" }) // Navigate to Player Info
-            } else if currentView == "WorkoutInfo" {
-                WorkoutInfoView(onBack: { currentView = "Landing" }) // Navigate to Workout Info
-            } else if currentView == "PlayerSelection" {
-                PlayerSelectionView(onBack: { currentView = "Landing" }) // Navigate to Player Selection
+            }
+            .navigationDestination(for: String.self) { view in
+                switch view {
+                case "MyProfile":
+                    MyProfileView()
+                case "Workouts":
+                    WorkoutsView()
+                case "Throwing":
+                    ThrowingView()
+                case "Nutrition":
+                    NutritionView()
+                case "Recovery":
+                    RecoveryView()
+                default:
+                    Text("Unknown View")
+                }
             }
         }
+    }
+}
+
+// A reusable block view for navigation
+struct BlockView: View {
+    let title: String
+    let color: Color
+
+    var body: some View {
+        Text(title)
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(color)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .shadow(radius: 5)
+    }
+}
+
+// Placeholder views for each section
+
+struct ThrowingView: View {
+    var body: some View {
+        Text("Throwing Page")
+            .font(.largeTitle)
+            .padding()
+    }
+}
+
+struct NutritionView: View {
+    var body: some View {
+        Text("Nutrition Page")
+            .font(.largeTitle)
+            .padding()
+    }
+}
+
+struct RecoveryView: View {
+    var body: some View {
+        Text("Recovery Page")
+            .font(.largeTitle)
+            .padding()
     }
 }
