@@ -89,3 +89,8 @@ def get_players(request):
     players = Player.objects.all()
     serializer = PlayerSerializer(players, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_player_id(request):
+    # Temporarily return a hard-coded playerId for testing
+    return Response({"playerId": 1}, status=200)
