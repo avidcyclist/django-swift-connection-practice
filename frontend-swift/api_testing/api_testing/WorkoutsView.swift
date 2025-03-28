@@ -20,7 +20,7 @@ struct WorkoutsView: View {
                     BlockView(title: "Active Warmup", color: .green)
                 }
 
-                NavigationLink(destination: DetailedWorkoutsView(playerId: playerId)) {
+                NavigationLink(destination: WorkoutsDetailView(playerId: playerId)) {
                     BlockView(title: "Workout", color: .orange)
                 }
 
@@ -30,22 +30,5 @@ struct WorkoutsView: View {
             }
             .padding()
         }
-    }
-}
-
-// A reusable block view for navigation
-struct BlockView: View {
-    let title: String
-    let color: Color
-
-    var body: some View {
-        Text(title)
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(color)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .shadow(radius: 5)
     }
 }

@@ -61,23 +61,6 @@ struct ContentView: View {
     }
 }
 
-// A reusable block view for navigation
-struct BlockView: View {
-    let title: String
-    let color: Color
-
-    var body: some View {
-        Text(title)
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(color)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .shadow(radius: 5)
-    }
-}
-
 // Placeholder views for each section
 
 struct ThrowingView: View {
