@@ -40,7 +40,7 @@ struct ContentView: View {
                 case "MyProfile":
                     MyProfileView()
                 case "Workouts":
-                    WorkoutsView()
+                    WorkoutsView(playerId: 1, onBack: {}) // Updated to use WorkoutsView
                 case "Throwing":
                     ThrowingView()
                 case "Nutrition":
