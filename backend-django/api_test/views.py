@@ -8,7 +8,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -94,3 +94,16 @@ def get_players(request):
 def get_player_id(request):
     # Temporarily return a hard-coded playerId for testing
     return Response({"playerId": 1}, status=200)
+
+
+@api_view(['GET'])
+def get_player_correctives(request, player_id):
+    # Fetch the player or return a 404 if not found
+    player = get_object_or_404(Player, id=player_id)
+
+    # Get the correctives assigned to the player
+    correctives = player.correctives.all()
+
+    serializer = CorrectiveSerializer(correctives, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)

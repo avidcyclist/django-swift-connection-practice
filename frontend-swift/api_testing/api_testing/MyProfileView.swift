@@ -1,5 +1,6 @@
 import SwiftUI
 
+let baseURL = "https://e7d8-2601-246-8101-eff0-19ac-b8cb-35e6-25bf.ngrok-free.app"
 
 struct MyProfileView: View {
     @State private var apiResponse: [String] = [] // State variable to store API response
@@ -20,7 +21,7 @@ struct MyProfileView: View {
     }
 
     func fetchAPIResponse(endpoint: String) {
-        guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/\(endpoint)/") else {
+        guard let url = URL(string: "\(baseURL)/api/\(endpoint)/") else {
             apiResponse = ["Invalid URL"]
             return
         }

@@ -1,5 +1,8 @@
 import SwiftUI
 
+let baseURL = "https://e7d8-2601-246-8101-eff0-19ac-b8cb-35e6-25bf.ngrok-free.app"
+
+
 struct WorkoutsDetailView: View {
     let playerId: Int
     @State private var phaseName: String = "Loading..."
@@ -15,37 +18,50 @@ struct WorkoutsDetailView: View {
             Text(phaseName)
                 .font(.headline)
                 .padding()
+List {
+    ForEach(workouts.indices, id: \.self) { index in
+        VStack(alignment: .leading) {
+            Text(workouts[index].exercise)
+                .font(.headline)
 
-            List {
-                ForEach(workouts.indices, id: \.self) { index in
-                    VStack(alignment: .leading) {
-                        Text(workouts[index].exercise)
-                            .font(.headline)
+            HStack {
+                Text("Reps: \(workouts[index].reps)")
+                Text("Sets: \(workouts[index].sets)")
+            }
+            .font(.subheadline)
 
-                        HStack {
-                            Text("Reps: \(workouts[index].reps)")
-                            Text("Sets: \(workouts[index].sets)")
-                        }
-                        .font(.subheadline)
+            // Add column headers for Weight and RPE
+            HStack {
+                Text("Set")
+                    .frame(width: 100, alignment: .leading)
+                Text("Weight")
+                    .font(.subheadline)
+                    .frame(width: 100, alignment: .center)
+                Text("RPE")
+                    .font(.subheadline)
+                    .frame(width: 100, alignment: .center)
+            }
 
-                        ForEach(0..<workouts[index].sets, id: \.self) { setIndex in
-                            HStack {
-                                Text("Set \(setIndex + 1):")
-                                TextField("Enter weight", value: $workouts[index].weight[setIndex], format: .number)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .frame(width: 100)
+            ForEach(0..<workouts[index].sets, id: \.self) { setIndex in
+                HStack {
+                    Text("Set \(setIndex + 1):")
+                        .frame(width: 100, alignment: .leading)
 
-                                TextField("Enter RPE", value: $workouts[index].rpe[setIndex], format: .number)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .frame(width: 100)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 8)
+                    TextField("Enter weight", value: $workouts[index].weight[setIndex], format: .number)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                        .frame(width: 100)
+
+                    TextField("Enter RPE", value: $workouts[index].rpe[setIndex], format: .number)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                        .frame(width: 100)
                 }
             }
+        }
+        .padding(.vertical, 8)
+    }
+}
 
             Button("Save") {
                 saveWorkoutData()
@@ -68,7 +84,7 @@ struct WorkoutsDetailView: View {
     }
 
     func fetchPlayerPhase() {
-        guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/player-phases/\(playerId)/") else {
+        guard let url = URL(string: "\(baseURL)/api/player-phases/\(playerId)/") else {
             phaseName = "Invalid URL"
             return
         }
@@ -132,7 +148,7 @@ struct WorkoutsDetailView: View {
             return
         }
 
-        guard let url = URL(string: "https://ce30-2601-246-8101-eff0-40fd-799a-6b28-c7b8.ngrok-free.app/api/save-workout-log/") else { return }
+        guard let url = URL(string: "\(baseURL)/api/save-workout-log/") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -192,6 +208,6 @@ struct WorkoutEntry {
     var exercise: String
     var reps: Int
     var sets: Int
-    var weight: [Double] // Editable weight field for each set
-    var rpe: [Double]    // Editable RPE field for each set
+    var weight: [Double?] // Editable weight field for each set
+    var rpe: [Double?]    // Editable RPE field for each set
 }

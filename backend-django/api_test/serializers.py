@@ -1,10 +1,7 @@
 from rest_framework import serializers
-from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkout
+from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective
 
-class PlayerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Player
-        fields = ['id', 'name', 'age', 'team']  # Include the fields you want in the API response
+
 
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,4 +34,17 @@ class PlayerPhaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlayerPhase
-        fields = ['player', 'phase', 'start_date', 'end_date']     
+        fields = ['player', 'phase', 'start_date', 'end_date']
+        
+class CorrectiveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Corrective
+        fields = ['id', 'name', 'sets', 'reps', 'youtube_link']
+                
+
+class PlayerSerializer(serializers.ModelSerializer):
+    correctives = CorrectiveSerializer(many=True)  # Include correctives in the player data
+
+    class Meta:
+        model = Player
+        fields = ["id", "name", "age", "team", "correctives"]
