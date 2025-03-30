@@ -3,6 +3,7 @@ import Config
 
 struct CorrectivesView: View {
     let playerId: Int
+    let playerName: String // Added playerName to display in the view
     @State private var correctives: [Corrective] = [] // State to store fetched correctives
     @State private var errorMessage: String? = nil   // State to store error messages
 
