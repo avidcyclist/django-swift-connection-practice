@@ -1,6 +1,5 @@
 import SwiftUI
-
-let baseURL = "https://e7d8-2601-246-8101-eff0-19ac-b8cb-35e6-25bf.ngrok-free.app"
+import Config
 
 
 struct WorkoutsDetailView: View {
@@ -208,6 +207,6 @@ struct WorkoutEntry {
     var exercise: String
     var reps: Int
     var sets: Int
-    var weight: [Double?] // Editable weight field for each set
-    var rpe: [Double?]    // Editable RPE field for each set
+    var weight: [Double] // Editable weight field for each set
+    var rpe: [Double]    // Editable RPE field for each set
 }

@@ -2,7 +2,8 @@ import SwiftUI
 
 struct WorkoutsView: View {
     let playerId: Int
-
+    let playerName: String
+    // Placeholder for player name
     var body: some View {
         VStack {
             Text("Workouts")
@@ -12,7 +13,7 @@ struct WorkoutsView: View {
 
             // Blocks for categories
             VStack(spacing: 20) {
-                NavigationLink(destination: CorrectivesView(playerId: playerId)) {
+                NavigationLink(destination: CorrectivesView(playerId: playerId, playerName: playerName)) {
                     BlockView(title: "Correctives", color: .blue)
                 }
 
