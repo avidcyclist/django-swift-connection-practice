@@ -1,5 +1,4 @@
 import SwiftUI
-import Models
 
 struct WorkoutDayView: View {
     let day: Int

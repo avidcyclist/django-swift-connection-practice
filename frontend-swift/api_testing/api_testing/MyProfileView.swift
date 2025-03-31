@@ -1,6 +1,4 @@
 import SwiftUI
-import Config
-
 
 struct MyProfileView: View {
     @State private var apiResponse: [String] = [] // State variable to store API response

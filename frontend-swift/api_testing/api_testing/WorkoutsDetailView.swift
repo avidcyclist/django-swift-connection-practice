@@ -1,6 +1,4 @@
 import SwiftUI
-import Config
-import Models
 
 struct WorkoutsDetailView: View {
     let playerId: Int
