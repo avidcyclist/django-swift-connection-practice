@@ -21,7 +21,9 @@ class PhaseWorkout(models.Model):
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
     reps = models.IntegerField()  # Reps for this workout in the phase
     sets = models.IntegerField()  # Sets for this workout in the phase
-
+    day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
+    order = models.IntegerField(default=1)  # Order of the workout in the day
+    
     def __str__(self):
         return f"{self.phase.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
     

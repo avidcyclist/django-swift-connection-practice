@@ -19,7 +19,7 @@ class PhaseWorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PhaseWorkout
-        fields = ['workout', 'reps', 'sets']
+        fields = ['workout', 'reps', 'sets', 'day', 'order']  # Include reps, sets, day, and order
         
 class PhaseSerializer(serializers.ModelSerializer):
     phase_workouts = PhaseWorkoutSerializer(many=True)  # Include workouts with reps and sets

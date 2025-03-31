@@ -87,4 +87,12 @@ struct Corrective: Identifiable, Decodable {
     let sets: Int?
     let reps: Int?
     let youtubeLink: String?
+
+    enum CodingKeys: String, CodingKey {
+    case id
+    case name
+    case sets
+    case reps
+    case youtubeLink = "youtube_link" // Map API field to Swift property
+    }
 }

@@ -107,3 +107,34 @@ def get_player_correctives(request, player_id):
     serializer = CorrectiveSerializer(correctives, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_phase_workouts_by_day(request, player_id):
+    # Get the player's current phase
+    player_phases = PlayerPhase.objects.filter(player__id=player_id)
+    if not player_phases.exists():
+        return Response({"error": "No phases found for this player."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Get the latest phase (or modify logic to select the desired phase)
+    current_phase = player_phases.latest('start_date')
+
+    # Group workouts by day and order them
+    phase_workouts = PhaseWorkout.objects.filter(phase=current_phase.phase).order_by('day', 'order')
+    grouped_workouts = {}
+    for workout in phase_workouts:
+        day = workout.day
+        if day not in grouped_workouts:
+            grouped_workouts[day] = []
+        grouped_workouts[day].append({
+            "exercise": workout.workout.exercise,
+            "reps": workout.reps,
+            "sets": workout.sets,
+            "order": workout.order
+        })
+
+    # Build the response
+    response_data = {
+        "phase_name": current_phase.phase.name,
+        "workouts_by_day": grouped_workouts
+    }
+    return Response(response_data, status=status.HTTP_200_OK)

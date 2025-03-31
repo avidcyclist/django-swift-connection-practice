@@ -10,11 +10,12 @@ enum NavigationDestination: String, Hashable {
 
 struct ContentView: View {
     @State private var playerId: Int = 1 // Hardcoded playerId for testing
+    @State private var playerName: String = "Walter"
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("Welcome, Athlete!")
+                Text("Welcome, \(playerName)!")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding()
@@ -46,9 +47,9 @@ struct ContentView: View {
             .navigationDestination(for: NavigationDestination.self) { destination in
                 switch destination {
                 case .myProfile:
-                    MyProfileView()
+                    MyProfileView(playerName: playerName) // Pass the hardcoded playerId here
                 case .workouts:
-                    WorkoutsView(playerId: playerId) // Pass the hardcoded playerId here
+                    WorkoutsView(playerId: playerId, playerName: playerName) // Pass the hardcoded playerId here
                 case .throwing:
                     ThrowingView()
                 case .nutrition:
