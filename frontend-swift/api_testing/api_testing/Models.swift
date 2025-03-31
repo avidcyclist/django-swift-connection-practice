@@ -1,11 +1,11 @@
 import Foundation
 
 struct WorkoutEntry: Identifiable, Decodable {
-    var id: Int { workoutId }
-    let workoutId: Int
+    var id: UUID = UUID()
     let exercise: String
     let reps: Int
     let sets: Int
-    var weight: [Double] // Editable weight field for each set
-    var rpe: [Double]    // Editable RPE field for each set
+    let order: Int
+    var weight: [Double] = [] // Default empty array
+    var rpe: [Double] = []    // Default empty array
 }

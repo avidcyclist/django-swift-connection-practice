@@ -132,9 +132,10 @@ def get_phase_workouts_by_day(request, player_id):
             "order": workout.order
         })
 
-    # Build the response
+    # Convert defaultdict to a regular dict with integer keys
     response_data = {
         "phase_name": current_phase.phase.name,
-        "workouts_by_day": grouped_workouts
+        "workouts_by_day": {int(day): workouts for day, workouts in grouped_workouts.items()}
     }
-    return Response(response_data, status=status.HTTP_200_OK)
+
+    return JsonResponse(response_data)
