@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+import json
 # Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -8,7 +8,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PhaseWorkoutSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -115,27 +115,25 @@ def get_phase_workouts_by_day(request, player_id):
     if not player_phases.exists():
         return Response({"error": "No phases found for this player."}, status=status.HTTP_404_NOT_FOUND)
 
-    # Get the latest phase (or modify logic to select the desired phase)
+    # Get the latest phase
     current_phase = player_phases.latest('start_date')
 
-    # Group workouts by day and order them
+    # Group workouts by day
     phase_workouts = PhaseWorkout.objects.filter(phase=current_phase.phase).order_by('day', 'order')
     grouped_workouts = {}
     for workout in phase_workouts:
         day = workout.day
         if day not in grouped_workouts:
             grouped_workouts[day] = []
-        grouped_workouts[day].append({
-            "exercise": workout.workout.exercise,
-            "reps": workout.reps,
-            "sets": workout.sets,
-            "order": workout.order
-        })
+        grouped_workouts[day].append(workout)
 
-    # Convert defaultdict to a regular dict with integer keys
+    # Serialize the response
     response_data = {
         "phase_name": current_phase.phase.name,
-        "workouts_by_day": {int(day): workouts for day, workouts in grouped_workouts.items()}
+        "workouts_by_day": {
+            str(day): PhaseWorkoutSerializer(workouts, many=True).data
+            for day, workouts in grouped_workouts.items()
+        }
     }
 
-    return JsonResponse(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)

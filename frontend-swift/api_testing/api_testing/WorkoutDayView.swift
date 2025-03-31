@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WorkoutDayView: View {
+    let playerId: Int
     let day: Int
     @State var workouts: [WorkoutEntry]
     @State private var showSuccessAlert: Bool = false

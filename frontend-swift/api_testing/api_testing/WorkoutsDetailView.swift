@@ -18,8 +18,9 @@ struct WorkoutsDetailView: View {
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                List(workoutsByDay.keys.sorted(), id: \.self) { day in
-                    NavigationLink(destination: WorkoutDayView(day: day, workouts: workoutsByDay[day] ?? [])) {
+                
+                List(workoutsByDay.keys.compactMap { Int($0) }.sorted(), id: \.self) { day in
+                    NavigationLink(destination: WorkoutDayView(day: day, playerId: playerId, workouts: workoutsByDay[String(day)] ?? [])) {
                         Text("Day \(day)")
                             .font(.headline)
                             .padding()
@@ -78,5 +79,5 @@ struct WorkoutsDetailView: View {
 
 struct PhaseWorkoutsResponse: Decodable {
     let phaseName: String
-    let workoutsByDay: [Int: [WorkoutEntry]]
+    let workoutsByDay: [String: [WorkoutEntry]]
 }

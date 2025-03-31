@@ -1,5 +1,4 @@
 import SwiftUI
-import Config
 
 struct CorrectivesView: View {
     let playerId: Int
