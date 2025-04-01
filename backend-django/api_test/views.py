@@ -66,24 +66,24 @@ def save_workout_log(request):
     # Validate the incoming data
     player_id = request.data.get("player")
     exercises = request.data.get("exercises")
-    date_str = request.data.get("date")
+    week = request.data.get("week")
+    day = request.data.get("day")
 
-    if not player_id or not exercises or not date_str:
-        return Response({"error": "Missing required fields (player, exercises, date)."}, status=status.HTTP_400_BAD_REQUEST)
+    if not player_id or not exercises or not week or not day:
+        return Response({"error": "Missing required fields (player, exercises, week, day)."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Ensure the player exists
     player = get_object_or_404(Player, id=player_id)
 
-    # Parse the date
-    try:
-        date = datetime.strptime(date_str, "%m/%d/%y").date()
-    except ValueError:
-        return Response({"error": "Invalid date format. Use MM/DD/YY."}, status=status.HTTP_400_BAD_REQUEST)
+    # Get the player's current phase
+    player_phase = PlayerPhase.objects.filter(player=player).latest('start_date')
 
-    # Check if a log already exists for this player and date
+    # Check if a log already exists for this player, phase, week, and day
     workout_log, created = WorkoutLog.objects.update_or_create(
         player=player,
-        date=date,
+        phase=player_phase.phase,
+        week=week,
+        day=day,
         defaults={"exercises": exercises}
     )
 
@@ -193,15 +193,18 @@ def get_phase_workouts_by_week(request, player_id):
 
 
 class GetWorkoutLogView(APIView):
-    def get(self, request, player_id, day):
-        # Parse the day into a date object
-        try:
-            date = datetime.strptime(day, "%Y-%m-%d").date()
-        except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, player_id, week, day):
+        # Get the player's current phase
+        player_phase = PlayerPhase.objects.filter(player__id=player_id).latest('start_date')
 
-        # Fetch the workout log for the player and date
-        log = WorkoutLog.objects.filter(player_id=player_id, date=date).first()
+        # Fetch the workout log for the player, phase, week, and day
+        log = WorkoutLog.objects.filter(
+            player_id=player_id,
+            phase=player_phase.phase,
+            week=week,
+            day=day
+        ).first()
+
         if log:
             return Response(WorkoutLogSerializer(log).data, status=status.HTTP_200_OK)
         return Response({"exercises": []}, status=status.HTTP_200_OK)

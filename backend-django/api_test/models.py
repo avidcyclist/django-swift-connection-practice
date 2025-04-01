@@ -61,8 +61,15 @@ class PlayerPhase(models.Model):
     
 class WorkoutLog(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
+    phase = models.ForeignKey(Phase, on_delete=models.CASCADE)  # Link to the phase
+    week = models.IntegerField()  # Week number within the phase
+    day = models.IntegerField()   # Day number within the week
     exercises = models.JSONField()  # Store all exercises and their sets as a JSON object
+    created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when the log is created
+    updated_at = models.DateTimeField(auto_now=True)  # Automatically update when the log is modified
+
+    class Meta:
+        unique_together = ('player', 'phase', 'week', 'day')  # Ensure no duplicate logs for the same week/day
 
     def __str__(self):
-        return f"{self.player.user.username} - {self.date} - {len(self.exercises)} exercises"
+        return f"{self.player.user.username} - Phase: {self.phase.name}, Week: {self.week}, Day: {self.day}"

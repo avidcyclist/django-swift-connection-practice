@@ -12,5 +12,5 @@ urlpatterns = [
     path('api/player/<int:player_id>/correctives/', get_player_correctives, name='get-player-correctives'),
     path('api/player-phases/<int:player_id>/workouts-by-day/', get_phase_workouts_by_day, name='workouts-by-day'),
     path('api/player-phases/<int:player_id>/workouts-by-week/', get_phase_workouts_by_week, name='workouts-by-week'),
-    path('api/get-workout-log/<int:player_id>/<str:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
+    path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
 ]
