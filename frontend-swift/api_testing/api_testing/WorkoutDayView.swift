@@ -87,7 +87,13 @@ struct WorkoutDayView: View {
     }
 
 func fetchWorkoutLog() {
-    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(day)/") else { return }
+    // Format the day as a valid date string (e.g., "2025-04-01")
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    guard let date = Calendar.current.date(byAdding: .day, value: day - 1, to: Date()) else { return }
+    let formattedDate = formatter.string(from: date)
+
+    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(formattedDate)/") else { return }
 
     URLSession.shared.dataTask(with: url) { data, response, error in
         if let error = error {
@@ -100,7 +106,6 @@ func fetchWorkoutLog() {
                 let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
                 DispatchQueue.main.async {
                     for (index, workout) in workouts.enumerated() {
-                        // Match exercises by their name
                         if let savedWorkout = log.exercises.first(where: { $0.exercise == workout.workout.exercise }) {
                             workouts[index].weight = savedWorkout.sets.map { $0.weight }
                             workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
@@ -113,7 +118,6 @@ func fetchWorkoutLog() {
         }
     }.resume()
 }
-
     func saveWorkoutData() {
         guard !workouts.isEmpty else {
             print("Error: No workouts to save.")

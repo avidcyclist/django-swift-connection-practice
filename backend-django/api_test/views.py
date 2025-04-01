@@ -66,17 +66,31 @@ def save_workout_log(request):
     # Validate the incoming data
     player_id = request.data.get("player")
     exercises = request.data.get("exercises")
-    date = request.data.get("date")
+    date_str = request.data.get("date")
 
-    if not player_id or not exercises or not date:
+    if not player_id or not exercises or not date_str:
         return Response({"error": "Missing required fields (player, exercises, date)."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Ensure the player exists
     player = get_object_or_404(Player, id=player_id)
 
-    # Save the workout log
-    workout_log = WorkoutLog.objects.create(player=player, date=date, exercises=exercises)
-    return Response({"message": "Workout log saved successfully!"}, status=status.HTTP_201_CREATED)
+    # Parse the date
+    try:
+        date = datetime.strptime(date_str, "%m/%d/%y").date()
+    except ValueError:
+        return Response({"error": "Invalid date format. Use MM/DD/YY."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if a log already exists for this player and date
+    workout_log, created = WorkoutLog.objects.update_or_create(
+        player=player,
+        date=date,
+        defaults={"exercises": exercises}
+    )
+
+    if created:
+        return Response({"message": "Workout log created successfully!"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"message": "Workout log updated successfully!"}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_workout_logs(request, player_id):
