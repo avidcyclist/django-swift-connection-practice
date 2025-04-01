@@ -21,7 +21,7 @@ struct WorkoutsView: View {
                     BlockView(title: "Active Warmup", color: .green)
                 }
 
-                NavigationLink(destination: WorkoutsDetailView(playerId: playerId)) {
+                NavigationLink(destination: WeeksView(playerId: playerId)) {
                     BlockView(title: "Workout", color: .orange)
                 }
 

@@ -21,6 +21,7 @@ class PhaseWorkout(models.Model):
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
     reps = models.IntegerField()  # Reps for this workout in the phase
     sets = models.IntegerField()  # Sets for this workout in the phase
+    week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)
     day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
     order = models.IntegerField(default=1)  # Order of the workout in the day
     

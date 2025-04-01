@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct WorkoutsDetailView: View {
+struct WeeksView: View {
     let playerId: Int
+    @State private var weeks: [String: WeekDetails] = [:]
     @State private var phaseName: String = "Loading..."
-    @State private var workoutsByDay: [String: [WorkoutEntry]] = [:] // Group workouts by day
     @State private var showErrorAlert: Bool = false
     @State private var errorMessage: String = ""
 
@@ -13,15 +13,14 @@ struct WorkoutsDetailView: View {
                 .font(.largeTitle)
                 .padding()
 
-            if workoutsByDay.isEmpty {
-                Text("Loading workouts...")
+            if weeks.isEmpty {
+                Text("Loading weeks...")
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                
-                List(workoutsByDay.keys.compactMap { Int($0) }.sorted(), id: \.self) { day in
-                    NavigationLink(destination: WorkoutDayView(playerId: playerId, day: day, workouts: workoutsByDay[String(day)] ?? [])) {
-                        Text("Day \(day)")
+                List(weeks.keys.sorted(), id: \.self) { week in
+                    NavigationLink(destination: DaysView(playerId: playerId, week: week, days: weeks[week]?.days ?? [:])) {
+                        Text("Week \(week)")
                             .font(.headline)
                             .padding()
                     }
@@ -29,7 +28,7 @@ struct WorkoutsDetailView: View {
             }
         }
         .onAppear {
-            fetchWorkoutsByDay()
+            fetchWeeks()
         }
         .alert(isPresented: $showErrorAlert) {
             Alert(
@@ -40,17 +39,14 @@ struct WorkoutsDetailView: View {
         }
     }
 
-    func fetchWorkoutsByDay() {
-        guard let url = URL(string: "\(baseURL)/api/player-phases/\(playerId)/workouts-by-day/") else {
+    func fetchWeeks() {
+        guard let url = URL(string: "\(baseURL)/api/player-phases/\(playerId)/workouts-by-week/") else {
             errorMessage = "Invalid URL"
             showErrorAlert = true
             return
         }
 
-        var request = URLRequest(url: url)
-        request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning")
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
                     errorMessage = "Error: \(error.localizedDescription)"
@@ -64,7 +60,7 @@ struct WorkoutsDetailView: View {
                     let response = try JSONDecoder().decode(PhaseWorkoutsResponse.self, from: data)
                     DispatchQueue.main.async {
                         self.phaseName = response.phaseName
-                        self.workoutsByDay = response.workoutsByDay
+                        self.weeks = response.weeks
                     }
                 } catch {
                     DispatchQueue.main.async {
@@ -74,15 +70,5 @@ struct WorkoutsDetailView: View {
                 }
             }
         }.resume()
-    }
-}
-
-struct PhaseWorkoutsResponse: Decodable {
-    let phaseName: String
-    let workoutsByDay: [String: [WorkoutEntry]]
-
-    enum CodingKeys: String, CodingKey {
-        case phaseName = "phase_name"
-        case workoutsByDay = "workouts_by_day"
     }
 }

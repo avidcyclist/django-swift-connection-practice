@@ -8,7 +8,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PhaseWorkoutSerializer
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -133,6 +133,44 @@ def get_phase_workouts_by_day(request, player_id):
         "workouts_by_day": {
             str(day): PhaseWorkoutSerializer(workouts, many=True).data
             for day, workouts in grouped_workouts.items()
+        }
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_phase_workouts_by_week(request, player_id):
+    # Get the player's current phase
+    player_phases = PlayerPhase.objects.filter(player__id=player_id)
+    if not player_phases.exists():
+        return Response({"error": "No phases found for this player."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Get the latest phase
+    current_phase = player_phases.latest('start_date')
+
+    # Group workouts by week and day
+    phase_workouts = PhaseWorkout.objects.filter(phase=current_phase.phase).order_by('week', 'day', 'order')
+    grouped_workouts = {}
+    for workout in phase_workouts:
+        week = workout.week
+        day = workout.day
+        if week not in grouped_workouts:
+            grouped_workouts[week] = {"days": {}}
+        if day not in grouped_workouts[week]["days"]:
+            grouped_workouts[week]["days"][day] = []
+        grouped_workouts[week]["days"][day].append(workout)
+
+    # Serialize the response
+    response_data = {
+        "phase_name": current_phase.phase.name,
+        "weeks": {
+            str(week): {
+                "days": {
+                    str(day): PhaseWorkoutSerializer(workouts, many=True).data
+                    for day, workouts in week_data["days"].items()
+                }
+            }
+            for week, week_data in grouped_workouts.items()
         }
     }
 

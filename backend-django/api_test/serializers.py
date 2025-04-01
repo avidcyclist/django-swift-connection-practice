@@ -19,7 +19,7 @@ class PhaseWorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PhaseWorkout
-        fields = ['workout', 'reps', 'sets', 'day', 'order']  # Include reps, sets, day, and order
+        fields = ['workout', 'reps', 'sets', 'week', 'day', 'order']  # Include reps, sets, day, and order
         
 class PhaseSerializer(serializers.ModelSerializer):
     phase_workouts = PhaseWorkoutSerializer(many=True)  # Include workouts with reps and sets
@@ -48,3 +48,19 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ["id", "name", "age", "team", "correctives"]
+        
+class PhaseWorkoutsResponseSerializer(serializers.Serializer):
+    phase_name = serializers.CharField()
+    weeks = serializers.SerializerMethodField()
+
+    def get_weeks(self, obj):
+        weeks = {}
+        for workout in obj['workouts']:
+            week = workout.week
+            day = workout.day
+            if week not in weeks:
+                weeks[week] = {"days": {}}
+            if day not in weeks[week]["days"]:
+                weeks[week]["days"][day] = []
+            weeks[week]["days"][day].append(PhaseWorkoutSerializer(workout).data)
+        return weeks

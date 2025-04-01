@@ -14,7 +14,7 @@ struct WorkoutDayView: View {
 
             List(workouts.indices, id: \.self) { index in
                 VStack(alignment: .leading) {
-                    Text(workouts[index].exercise)
+                    Text(workouts[index].workout.exercise)
                         .font(.headline)
 
                     HStack {
@@ -87,7 +87,7 @@ struct WorkoutDayView: View {
         // Create the exercises array
         let exercises = workouts.map { workout in
             return [
-                "exercise": workout.exercise,
+                "exercise": workout.workout.exercise,
                 "sets": (0..<workout.sets).map { setIndex in
                     return [
                         "set_number": setIndex + 1,
