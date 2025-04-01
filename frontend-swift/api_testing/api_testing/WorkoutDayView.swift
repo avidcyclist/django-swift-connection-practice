@@ -23,6 +23,17 @@ struct WorkoutDayView: View {
                     }
                     .font(.subheadline)
 
+                    // Display Default RPE values
+                    if !workouts[index].rpe.isEmpty {
+                        Text("Default RPE: \(workouts[index].rpe.map { String($0) }.joined(separator: ", "))")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    } else {
+                        Text("Default RPE: None")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+
                     // Add column headers for Weight and RPE
                     HStack {
                         Text("Set")
@@ -45,9 +56,9 @@ struct WorkoutDayView: View {
                                 .keyboardType(.decimalPad)
                                 .frame(width: 100)
 
-                            TextField("Enter RPE", value: $workouts[index].rpe[setIndex], format: .number)
+                            TextField("Enter RPE", value: $workouts[index].rpeValues[setIndex], format: .number)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
+                                .keyboardType(.numberPad)
                                 .frame(width: 100)
                         }
                     }
@@ -92,7 +103,7 @@ struct WorkoutDayView: View {
                     return [
                         "set_number": setIndex + 1,
                         "weight": workout.weight[setIndex],
-                        "rpe": workout.rpe[setIndex]
+                        "rpe": workout.rpeValues[setIndex]
                     ]
                 }
             ]
@@ -123,7 +134,7 @@ struct WorkoutDayView: View {
                 workouts = workouts.map { workout in
                     var updatedWorkout = workout
                     updatedWorkout.weight = Array(repeating: 0.0, count: workout.sets) // Reset weight fields after saving
-                    updatedWorkout.rpe = Array(repeating: 0.0, count: workout.sets)    // Reset RPE fields after saving
+                    updatedWorkout.rpeValues = Array(repeating: 0, count: workout.sets) // Reset RPE fields after saving
                     return updatedWorkout
                 }
             } else {

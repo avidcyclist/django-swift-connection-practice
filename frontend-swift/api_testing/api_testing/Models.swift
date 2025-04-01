@@ -17,12 +17,13 @@ struct WeekDetails: Decodable {
 }
 
 // Individual workout entry
+// Individual workout entry
 struct WorkoutEntry: Decodable {
     let workout: WorkoutDetails
     let reps: Int
     let sets: Int
     let tempo: String // Add tempo if needed
-    let rpe: String   // Add RPE as a string if needed
+    var rpe: [Int] // Maps to "default_rpe" in the API response
     let day: Int
     let order: Int
     var weight: [Double] // Athlete-entered weights
@@ -35,7 +36,7 @@ struct WorkoutEntry: Decodable {
         self.reps = try container.decode(Int.self, forKey: .reps)
         self.sets = try container.decode(Int.self, forKey: .sets)
         self.tempo = try container.decodeIfPresent(String.self, forKey: .tempo) ?? ""
-        self.rpe = try container.decodeIfPresent(String.self, forKey: .rpe) ?? ""
+        self.rpe = try container.decodeIfPresent([Int].self, forKey: .rpe) ?? [] // Decode as an array of integers
         self.day = try container.decode(Int.self, forKey: .day)
         self.order = try container.decode(Int.self, forKey: .order)
 
@@ -45,9 +46,10 @@ struct WorkoutEntry: Decodable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case workout, reps, sets, tempo, rpe, day, order
+        case workout, reps, sets, tempo, rpe = "default_rpe", day, order
     }
 }
+
 
 // Details about the workout itself
 struct WorkoutDetails: Decodable {

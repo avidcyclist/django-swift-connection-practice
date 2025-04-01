@@ -24,6 +24,7 @@ class PhaseWorkout(models.Model):
     week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)
     day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
     order = models.IntegerField(default=1)  # Order of the workout in the day
+    default_rpe = models.JSONField(default=list) 
     
     def __str__(self):
         return f"{self.phase.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"

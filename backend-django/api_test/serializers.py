@@ -16,10 +16,11 @@ class WorkoutLogSerializer(serializers.ModelSerializer):
         
 class PhaseWorkoutSerializer(serializers.ModelSerializer):
     workout = WorkoutSerializer()  # Include workout details
-
+    default_rpe = serializers.JSONField()  # Include default_rpe field
+    
     class Meta:
         model = PhaseWorkout
-        fields = ['workout', 'reps', 'sets', 'week', 'day', 'order']  # Include reps, sets, day, and order
+        fields = ['workout', 'reps', 'sets', 'week', 'day', 'order', 'default_rpe']  # Include reps, sets, day, and order
         
 class PhaseSerializer(serializers.ModelSerializer):
     phase_workouts = PhaseWorkoutSerializer(many=True)  # Include workouts with reps and sets
