@@ -81,6 +81,36 @@ struct WorkoutDayView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        .onAppear {
+            fetchWorkoutLog() // Fetch saved workout data when the view appears
+        }
+    }
+
+    func fetchWorkoutLog() {
+        guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(day)/") else { return }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching workout log: \(error.localizedDescription)")
+                return
+            }
+
+            if let data = data {
+                do {
+                    let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
+                    DispatchQueue.main.async {
+                        for (index, workout) in workouts.enumerated() {
+                            if let savedWorkout = log.exercises.first(where: { $0.workout_id == workout.workout.id }) {
+                                workouts[index].weight = savedWorkout.sets.map { $0.weight }
+                                workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
+                            }
+                        }
+                    }
+                } catch {
+                    print("Error decoding workout log: \(error)")
+                }
+            }
+        }.resume()
     }
 
     func saveWorkoutData() {
@@ -130,12 +160,6 @@ struct WorkoutDayView: View {
                 print("Workout log saved successfully!")
                 DispatchQueue.main.async {
                     showSuccessAlert = true // Show success alert
-                }
-                workouts = workouts.map { workout in
-                    var updatedWorkout = workout
-                    updatedWorkout.weight = Array(repeating: 0.0, count: workout.sets) // Reset weight fields after saving
-                    updatedWorkout.rpeValues = Array(repeating: 0, count: workout.sets) // Reset RPE fields after saving
-                    return updatedWorkout
                 }
             } else {
                 print("Failed to save workout log. Response: \(response.debugDescription)")

@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from datetime import datetime
 from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout
 from django.http import JsonResponse
@@ -175,3 +176,18 @@ def get_phase_workouts_by_week(request, player_id):
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+class GetWorkoutLogView(APIView):
+    def get(self, request, player_id, day):
+        # Parse the day into a date object
+        try:
+            date = datetime.strptime(day, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch the workout log for the player and date
+        log = WorkoutLog.objects.filter(player_id=player_id, date=date).first()
+        if log:
+            return Response(WorkoutLogSerializer(log).data, status=status.HTTP_200_OK)
+        return Response({"exercises": []}, status=status.HTTP_200_OK)
