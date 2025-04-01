@@ -86,32 +86,33 @@ struct WorkoutDayView: View {
         }
     }
 
-    func fetchWorkoutLog() {
-        guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(day)/") else { return }
+func fetchWorkoutLog() {
+    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(day)/") else { return }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error fetching workout log: \(error.localizedDescription)")
-                return
-            }
+    URLSession.shared.dataTask(with: url) { data, response, error in
+        if let error = error {
+            print("Error fetching workout log: \(error.localizedDescription)")
+            return
+        }
 
-            if let data = data {
-                do {
-                    let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
-                    DispatchQueue.main.async {
-                        for (index, workout) in workouts.enumerated() {
-                            if let savedWorkout = log.exercises.first(where: { $0.workout_id == workout.workout.id }) {
-                                workouts[index].weight = savedWorkout.sets.map { $0.weight }
-                                workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
-                            }
+        if let data = data {
+            do {
+                let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
+                DispatchQueue.main.async {
+                    for (index, workout) in workouts.enumerated() {
+                        // Match exercises by their name
+                        if let savedWorkout = log.exercises.first(where: { $0.exercise == workout.workout.exercise }) {
+                            workouts[index].weight = savedWorkout.sets.map { $0.weight }
+                            workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
                         }
                     }
-                } catch {
-                    print("Error decoding workout log: \(error)")
                 }
+            } catch {
+                print("Error decoding workout log: \(error)")
             }
-        }.resume()
-    }
+        }
+    }.resume()
+}
 
     func saveWorkoutData() {
         guard !workouts.isEmpty else {

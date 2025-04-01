@@ -1,3 +1,5 @@
+/*
+
 import SwiftUI
 
 struct WorkoutsDetailView: View {
@@ -86,3 +88,6 @@ struct PhaseWorkoutsResponse: Decodable {
         case workoutsByDay = "workouts_by_day"
     }
 }
+
+
+*/
