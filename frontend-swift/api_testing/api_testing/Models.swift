@@ -56,6 +56,12 @@ struct WorkoutDetails: Decodable {
     let id: Int
     let exercise: String
     let youtubeLink: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case exercise
+        case youtubeLink = "youtube_link"
+    }
 }
 
 struct WorkoutLog: Decodable {
