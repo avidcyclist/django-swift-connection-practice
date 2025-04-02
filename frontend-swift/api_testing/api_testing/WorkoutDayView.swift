@@ -63,6 +63,14 @@ struct WorkoutDayView: View {
                                 .frame(width: 100)
                         }
                     }
+
+                    // Display YouTube link if available
+                    if let youtubeLink = workouts[index].workout.youtubeLink {
+                        Link("Watch Tutorial", destination: URL(string: youtubeLink)!)
+                            .foregroundColor(.blue)
+                            .font(.subheadline)
+                            .padding(.top, 5)
+                    }
                 }
                 .padding(.vertical, 8)
             }
@@ -86,6 +94,7 @@ struct WorkoutDayView: View {
             fetchWorkoutLog() // Fetch saved workout data when the view appears
         }
     }
+}
 
 func fetchWorkoutLog() {
     guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(week)/\(day)/") else {
@@ -95,35 +104,36 @@ func fetchWorkoutLog() {
 
     print("Fetching workout log from URL: \(url)") // Debugging
 
-    URLSession.shared.dataTask(with: url) { data, response, error in
-        if let error = error {
-            print("Error fetching workout log: \(error.localizedDescription)")
-            return
-        }
-
-        if let data = data {
-            do {
-                let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
-                DispatchQueue.main.async {
-                    if log.id == nil {
-                        print("No workout log exists for this day. Showing default setup.")
-                    }
-                    // Update the UI with the fetched log (or default setup)
-                    self.workouts = log.exercises.map { exercise in
-                        WorkoutEntry(
-                            workout: Workout(exercise: exercise.exercise),
-                            sets: exercise.sets.count,
-                            weight: exercise.sets.map { $0.weight },
-                            rpeValues: exercise.sets.map { $0.rpe }
-                        )
-                    }
+    Task {
+        do {
+            // Perform the network request
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            // Decode the response
+            let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
+            
+            // Update the UI on the main thread
+            await MainActor.run {
+                self.workouts = log.exercises.map { exercise in
+                    WorkoutEntry(
+                        workout: WorkoutDetails(exercise: exercise.exercise),
+                        reps: 0, // Default value or replace with actual data
+                        sets: exercise.sets.count,
+                        tempo: "", // Default value or replace with actual data
+                        rpe: [], // Default value or replace with actual data
+                        day: self.day,
+                        order: 0, // Default value or replace with actual data
+                        weight: exercise.sets.map { $0.weight },
+                        rpeValues: exercise.sets.map { $0.rpe }
+                    )
                 }
-            } catch {
-                print("Error decoding workout log: \(error)")
             }
+        } catch {
+            print("Error fetching or decoding workout log: \(error)")
         }
-    }.resume()
+    }
 }
+
     func saveWorkoutData() {
         guard !workouts.isEmpty else {
             print("Error: No workouts to save.")

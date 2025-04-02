@@ -6,7 +6,7 @@ from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkou
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
-        fields = ['id', 'exercise']  # Include the fields you want in the API response
+        fields = ['id', 'exercise', 'youtube_link']  # Include the fields you want in the API response
    
         
 class WorkoutLogSerializer(serializers.ModelSerializer):

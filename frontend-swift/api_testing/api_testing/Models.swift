@@ -55,6 +55,7 @@ struct WorkoutEntry: Decodable {
 struct WorkoutDetails: Decodable {
     let id: Int
     let exercise: String
+    let youtubeLink: String?
 }
 
 struct WorkoutLog: Decodable {

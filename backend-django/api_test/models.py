@@ -5,7 +5,8 @@ from django.contrib.auth.models import User  # Assuming Player is tied to the Us
 
 class Workout(models.Model):
     exercise = models.CharField(max_length=100)
-
+    youtube_link = models.URLField(blank=True, null=True)  # Optional field for YouTube link
+    
     def __str__(self):
         return self.exercise
     
