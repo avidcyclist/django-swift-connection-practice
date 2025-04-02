@@ -17,7 +17,12 @@ struct DaysView: View {
                     .padding()
             } else {
                 List(days.keys.sorted(), id: \.self) { day in
-                    NavigationLink(destination: WorkoutDayView(playerId: playerId, day: Int(day) ?? 0, workouts: days[day] ?? [])) {
+                    NavigationLink(destination: WorkoutDayView(
+                        playerId: playerId,
+                        week: Int(week) ?? 0, // Pass the week as an integer
+                        day: Int(day) ?? 0,   // Pass the day as an integer
+                        workouts: days[day] ?? []
+                    )) {
                         Text("Day \(day)")
                             .font(.headline)
                             .padding()

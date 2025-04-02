@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WorkoutDayView: View {
     let playerId: Int
+    let week: Int
     let day: Int
     @State var workouts: [WorkoutEntry]
     @State private var showSuccessAlert: Bool = false
@@ -87,13 +88,12 @@ struct WorkoutDayView: View {
     }
 
 func fetchWorkoutLog() {
-    // Format the day as a valid date string (e.g., "2025-04-01")
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    guard let date = Calendar.current.date(byAdding: .day, value: day - 1, to: Date()) else { return }
-    let formattedDate = formatter.string(from: date)
+    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(week)/\(day)/") else {
+        print("Invalid URL")
+        return
+    }
 
-    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(formattedDate)/") else { return }
+    print("Fetching workout log from URL: \(url)") // Debugging
 
     URLSession.shared.dataTask(with: url) { data, response, error in
         if let error = error {
@@ -105,11 +105,17 @@ func fetchWorkoutLog() {
             do {
                 let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
                 DispatchQueue.main.async {
-                    for (index, workout) in workouts.enumerated() {
-                        if let savedWorkout = log.exercises.first(where: { $0.exercise == workout.workout.exercise }) {
-                            workouts[index].weight = savedWorkout.sets.map { $0.weight }
-                            workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
-                        }
+                    if log.id == nil {
+                        print("No workout log exists for this day. Showing default setup.")
+                    }
+                    // Update the UI with the fetched log (or default setup)
+                    self.workouts = log.exercises.map { exercise in
+                        WorkoutEntry(
+                            workout: Workout(exercise: exercise.exercise),
+                            sets: exercise.sets.count,
+                            weight: exercise.sets.map { $0.weight },
+                            rpeValues: exercise.sets.map { $0.rpe }
+                        )
                     }
                 }
             } catch {
@@ -147,7 +153,8 @@ func fetchWorkoutLog() {
         // Create the request body
         let body: [String: Any] = [
             "player": playerId,
-            "date": DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none),
+            "week": week, // Use the week property
+            "day": day,   // Use the day property
             "exercises": exercises
         ]
 

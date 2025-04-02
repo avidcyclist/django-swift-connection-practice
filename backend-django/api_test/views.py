@@ -207,4 +207,12 @@ class GetWorkoutLogView(APIView):
 
         if log:
             return Response(WorkoutLogSerializer(log).data, status=status.HTTP_200_OK)
-        return Response({"exercises": []}, status=status.HTTP_200_OK)
+
+        # Return a default response if no log exists
+        return Response({
+            "id": None,
+            "player": player_id,
+            "week": week,
+            "day": day,
+            "exercises": []  # Default empty exercises
+        }, status=status.HTTP_200_OK)

@@ -57,12 +57,23 @@ struct WorkoutDetails: Decodable {
     let exercise: String
 }
 
-// New Structs for Workout Log Response
 struct WorkoutLog: Decodable {
-    let id: Int?
+    let id: Int
     let player: Int
-    let date: String
-    let exercises: [ExerciseLog]
+    let week: Int
+    let day: Int
+    let exercises: [Exercise]
+
+    struct Exercise: Decodable {
+        let exercise: String
+        let sets: [Set]
+
+        struct Set: Decodable {
+            let set_number: Int
+            let weight: Double
+            let rpe: Double
+        }
+    }
 }
 
 struct ExerciseLog: Decodable {
