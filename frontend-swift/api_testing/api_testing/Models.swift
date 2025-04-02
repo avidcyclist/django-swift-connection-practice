@@ -67,6 +67,7 @@ struct WorkoutLog: Decodable {
 
     struct Exercise: Decodable {
         let exercise: String
+        let youtubeLink: String? 
         let sets: [Set]
 
         struct Set: Decodable {

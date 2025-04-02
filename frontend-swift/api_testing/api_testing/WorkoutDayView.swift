@@ -94,45 +94,39 @@ struct WorkoutDayView: View {
             fetchWorkoutLog() // Fetch saved workout data when the view appears
         }
     }
-}
 
-func fetchWorkoutLog() {
-    guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(week)/\(day)/") else {
-        print("Invalid URL")
-        return
-    }
+    func fetchWorkoutLog() {
+        // Construct the correct URL using week and day
+        guard let url = URL(string: "\(baseURL)/api/get-workout-log/\(playerId)/\(week)/\(day)/") else {
+            print("Invalid URL")
+            return
+        }
 
-    print("Fetching workout log from URL: \(url)") // Debugging
+        print("Fetching workout log from URL: \(url)") // Debugging
 
-    Task {
-        do {
-            // Perform the network request
-            let (data, _) = try await URLSession.shared.data(from: url)
-            
-            // Decode the response
-            let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
-            
-            // Update the UI on the main thread
-            await MainActor.run {
-                self.workouts = log.exercises.map { exercise in
-                    WorkoutEntry(
-                        workout: WorkoutDetails(exercise: exercise.exercise),
-                        reps: 0, // Default value or replace with actual data
-                        sets: exercise.sets.count,
-                        tempo: "", // Default value or replace with actual data
-                        rpe: [], // Default value or replace with actual data
-                        day: self.day,
-                        order: 0, // Default value or replace with actual data
-                        weight: exercise.sets.map { $0.weight },
-                        rpeValues: exercise.sets.map { $0.rpe }
-                    )
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching workout log: \(error.localizedDescription)")
+                return
+            }
+
+            if let data = data {
+                do {
+                    let log = try JSONDecoder().decode(WorkoutLog.self, from: data)
+                    DispatchQueue.main.async {
+                        for (index, workout) in workouts.enumerated() {
+                            if let savedWorkout = log.exercises.first(where: { $0.exercise == workout.workout.exercise }) {
+                                workouts[index].weight = savedWorkout.sets.map { $0.weight }
+                                workouts[index].rpeValues = savedWorkout.sets.map { $0.rpe }
+                            }
+                        }
+                    }
+                } catch {
+                    print("Error decoding workout log: \(error)")
                 }
             }
-        } catch {
-            print("Error fetching or decoding workout log: \(error)")
-        }
+        }.resume()
     }
-}
 
     func saveWorkoutData() {
         guard !workouts.isEmpty else {
