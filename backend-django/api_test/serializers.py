@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective
+from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
 
 
 
@@ -65,3 +65,11 @@ class PhaseWorkoutsResponseSerializer(serializers.Serializer):
                 weeks[week]["days"][day] = []
             weeks[week]["days"][day].append(PhaseWorkoutSerializer(workout).data)
         return weeks
+    
+    
+class PlayerPhaseWorkoutSerializer(serializers.ModelSerializer):
+    workout = WorkoutSerializer()  # Include workout details (e.g., exercise name, YouTube link)
+
+    class Meta:
+        model = PlayerPhaseWorkout
+        fields = ['workout', 'sets', 'reps', 'rpe', 'week', 'day', 'order']

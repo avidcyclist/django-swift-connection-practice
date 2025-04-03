@@ -7,9 +7,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout
+from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, PlayerPhaseWorkout
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PlayerPhaseWorkoutSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -164,9 +164,9 @@ def get_phase_workouts_by_week(request, player_id):
     current_phase = player_phases.latest('start_date')
 
     # Group workouts by week and day
-    phase_workouts = PhaseWorkout.objects.filter(phase=current_phase.phase).order_by('week', 'day', 'order')
+    player_phase_workouts = PlayerPhaseWorkout.objects.filter(player_phase=current_phase).order_by('week', 'day', 'order')
     grouped_workouts = {}
-    for workout in phase_workouts:
+    for workout in player_phase_workouts:
         week = workout.week
         day = workout.day
         if week not in grouped_workouts:
@@ -181,7 +181,7 @@ def get_phase_workouts_by_week(request, player_id):
         "weeks": {
             str(week): {
                 "days": {
-                    str(day): PhaseWorkoutSerializer(workouts, many=True).data
+                    str(day): PlayerPhaseWorkoutSerializer(workouts, many=True).data
                     for day, workouts in week_data["days"].items()
                 }
             }
@@ -205,14 +205,65 @@ class GetWorkoutLogView(APIView):
             day=day
         ).first()
 
-        if log:
-            return Response(WorkoutLogSerializer(log).data, status=status.HTTP_200_OK)
+        # Fetch the current workouts for the player's phase
+        current_workouts = PlayerPhaseWorkout.objects.filter(
+            player_phase=player_phase,
+            week=week,
+            day=day
+        ).order_by('order')
 
-        # Return a default response if no log exists
+        # If a log exists, adjust it to match the current workouts
+        if log:
+            log_data = WorkoutLogSerializer(log).data
+            adjusted_exercises = []
+
+            for workout in current_workouts:
+                # Find the matching exercise in the log
+                exercise_log = next(
+                    (e for e in log_data['exercises'] if e['exercise'] == workout.workout.exercise),
+                    None
+                )
+
+                if exercise_log:
+                    # Adjust the sets if they don't match
+                    while len(exercise_log['sets']) < workout.sets:
+                        exercise_log['sets'].append({
+                            "weight": 0.0,
+                            "set_number": len(exercise_log['sets']) + 1,
+                            "rpe": 0.0
+                        })
+                    while len(exercise_log['sets']) > workout.sets:
+                        exercise_log['sets'].pop()
+                    adjusted_exercises.append(exercise_log)
+                else:
+                    # Add a new exercise if it wasn't in the log
+                    adjusted_exercises.append({
+                        "exercise": workout.workout.exercise,
+                        "sets": [
+                            {"weight": 0.0, "set_number": i + 1, "rpe": 0.0}
+                            for i in range(workout.sets)
+                        ]
+                    })
+
+            log_data['exercises'] = adjusted_exercises
+            return Response(log_data, status=status.HTTP_200_OK)
+
+        # If no log exists, return a default response with the current workouts
+        default_exercises = [
+            {
+                "exercise": workout.workout.exercise,
+                "sets": [
+                    {"weight": None, "set_number": i + 1, "rpe": None}
+                    for i in range(workout.sets)
+                ]
+            }
+            for workout in current_workouts
+        ]
+
         return Response({
             "id": None,
             "player": player_id,
             "week": week,
             "day": day,
-            "exercises": []  # Default empty exercises
+            "exercises": default_exercises
         }, status=status.HTTP_200_OK)

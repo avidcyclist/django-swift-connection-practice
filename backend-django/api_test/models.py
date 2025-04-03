@@ -58,7 +58,33 @@ class PlayerPhase(models.Model):
     end_date = models.DateField()
 
     def __str__(self):
-        return f"{self.player.name} - {self.phase.name}" 
+        return f"{self.player.name} - {self.phase.name}"
+
+    def save(self, *args, **kwargs):
+        # Check if this is an update and the phase has changed
+        if self.pk:  # If the instance already exists (not a new one)
+            old_phase = PlayerPhase.objects.get(pk=self.pk).phase
+            if old_phase != self.phase:  # If the phase has changed
+                # Delete existing PlayerPhaseWorkout entries
+                from .models import PlayerPhaseWorkout, PhaseWorkout  # Avoid circular imports
+                PlayerPhaseWorkout.objects.filter(player_phase=self).delete()
+
+                # Repopulate PlayerPhaseWorkout with defaults from the new phase
+                phase_workouts = PhaseWorkout.objects.filter(phase=self.phase)
+                for workout in phase_workouts:
+                    PlayerPhaseWorkout.objects.create(
+                        player_phase=self,
+                        workout=workout.workout,
+                        reps=workout.reps,
+                        sets=workout.sets,
+                        week=workout.week,
+                        day=workout.day,
+                        order=workout.order,
+                        rpe=workout.default_rpe
+                    )
+
+        # Save the PlayerPhase instance
+        super().save(*args, **kwargs)
     
 class WorkoutLog(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
@@ -74,3 +100,21 @@ class WorkoutLog(models.Model):
 
     def __str__(self):
         return f"{self.player.user.username} - Phase: {self.phase.name}, Week: {self.week}, Day: {self.day}"
+    
+    
+class PlayerPhaseWorkout(models.Model):
+    player_phase = models.ForeignKey(
+        PlayerPhase, 
+        on_delete=models.CASCADE, 
+        related_name="player_phase_workouts"
+    )  # Link to the player's phase
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
+    reps = models.IntegerField()  # Custom reps for this workout
+    sets = models.IntegerField()  # Custom sets for this workout
+    week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)
+    day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
+    order = models.IntegerField(default=1)  # Order of the workout in the day
+    rpe = models.JSONField(default=list)  # Custom RPE values
+
+    def __str__(self):
+        return f"{self.player_phase.player.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
