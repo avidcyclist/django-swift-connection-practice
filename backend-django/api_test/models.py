@@ -111,7 +111,7 @@ class PlayerPhaseWorkout(models.Model):
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
     reps = models.IntegerField()  # Custom reps for this workout
     sets = models.IntegerField()  # Custom sets for this workout
-    week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)
+    week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)hen
     day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
     order = models.IntegerField(default=1)  # Order of the workout in the day
     rpe = models.JSONField(default=list)  # Custom RPE values

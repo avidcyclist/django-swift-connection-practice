@@ -20,6 +20,12 @@ class PlayerPhaseWorkoutInline(admin.TabularInline):
     extra = 0  # Do not show extra empty rows by default
     fields = ("workout", "week", "day", "order", "sets", "reps", "rpe")  # Fields to display
     can_delete = True  # Allow coaches to delete workouts
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "workout":
+            # Order workouts alphabetically by exercise name
+            kwargs["queryset"] = Workout.objects.order_by("exercise")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 # Admin for PlayerPhase
 @admin.register(PlayerPhase)
