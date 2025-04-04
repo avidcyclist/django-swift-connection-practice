@@ -1,7 +1,27 @@
 from django.contrib import admin
-from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
+from .models import Player, ActiveWarmup, PowerCNSExercise, PowerCNSWarmup, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
 
-admin.site.register(Player)
+@admin.register(ActiveWarmup)
+class ActiveWarmupAdmin(admin.ModelAdmin):
+    list_display = ("name", "youtube_link")
+    search_fields = ("name",)
+
+
+class PowerCNSExerciseInline(admin.TabularInline):
+    model = PowerCNSExercise
+    extra = 0
+
+
+@admin.register(PowerCNSWarmup)
+class PowerCNSWarmupAdmin(admin.ModelAdmin):
+    list_display = ("name", "day")
+    inlines = [PowerCNSExerciseInline]
+
+
+@admin.register(Player)
+class PlayerAdmin(admin.ModelAdmin):
+    list_display = ("name", "age", "team")
+    filter_horizontal = ("correctives", "active_warmup", "power_cns_warmups")
 
 @admin.register(Workout)
 class WorkoutAdmin(admin.ModelAdmin):

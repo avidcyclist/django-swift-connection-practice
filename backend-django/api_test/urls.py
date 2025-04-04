@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PlayerInfoView, WorkoutView, PlayerPhaseView, GetWorkoutLogView, save_workout_log, get_workout_logs, get_phase_workouts_by_week, get_players, get_player_id, get_player_correctives, get_phase_workouts_by_day
+from .views import PlayerInfoView, WorkoutView, PlayerPhaseView, PlayerWarmupView, GetWorkoutLogView, save_workout_log, get_workout_logs, get_phase_workouts_by_week, get_players, get_player_id, get_player_correctives, get_phase_workouts_by_day
 
 urlpatterns = [
     path('api/player-info/', PlayerInfoView.as_view(), name='player-info'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/player-phases/<int:player_id>/workouts-by-day/', get_phase_workouts_by_day, name='workouts-by-day'),
     path('api/player-phases/<int:player_id>/workouts-by-week/', get_phase_workouts_by_week, name='workouts-by-week'),
     path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
+    path('api/player-warmup/<int:player_id>/', PlayerWarmupView.as_view(), name='get-active-warmup'),
 ]

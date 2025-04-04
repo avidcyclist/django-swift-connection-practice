@@ -94,3 +94,31 @@ struct SetLog: Decodable {
     let weight: Double
     let rpe: Double
 }
+
+// Active Warmup Model
+struct ActiveWarmup: Identifiable, Codable {
+    let id: Int
+    let name: String
+    let youtube_link: String?
+}
+
+// Power CNS Exercise Model
+struct PowerCNSExercise: Identifiable, Codable {
+    let id: Int
+    let name: String
+    let youtube_link: String?
+}
+
+// Power CNS Warmup Model
+struct PowerCNSWarmup: Identifiable, Codable {
+    let id: Int
+    let name: String
+    let day: Int
+    let exercises: [PowerCNSExercise]
+}
+
+// Combined Warmup Response Model
+struct PlayerWarmupResponse: Codable {
+    let active_warmups: [ActiveWarmup]
+    let power_cns_warmups: [PowerCNSWarmup]
+}

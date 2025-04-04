@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, Workout, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
+from .models import Player, Workout, ActiveWarmup, PowerCNSWarmup, PowerCNSExercise, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
 
 
 
@@ -48,7 +48,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ["id", "name", "age", "team", "correctives"]
+        fields = ["id", "name", "age", "team", "correctives", "active_warmup", "power_cns_warmups"]  # Include active warmup and power CNS warmups
         
 class PhaseWorkoutsResponseSerializer(serializers.Serializer):
     phase_name = serializers.CharField()
@@ -73,3 +73,22 @@ class PlayerPhaseWorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerPhaseWorkout
         fields = ['workout', 'sets', 'reps', 'rpe', 'week', 'day', 'order']
+        
+        
+class ActiveWarmupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActiveWarmup
+        fields = ["id", "name", "youtube_link"]
+        
+class PowerCNSExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PowerCNSExercise
+        fields = ["id", "name", "youtube_link"]
+        
+        
+class PowerCNSWarmupSerializer(serializers.ModelSerializer):
+    exercises = PowerCNSExerciseSerializer(many=True)  # Include exercises in the warmup
+
+    class Meta:
+        model = PowerCNSWarmup
+        fields = ["id", "name", "day", "exercises"]

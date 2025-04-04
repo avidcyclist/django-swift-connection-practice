@@ -9,7 +9,7 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, PlayerPhaseWorkout
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PlayerPhaseWorkoutSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer
+from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PlayerPhaseWorkoutSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer, ActiveWarmupSerializer, PowerCNSWarmupSerializer
 
 class PlayerInfoView(APIView):
     def get(self, request):
@@ -267,3 +267,17 @@ class GetWorkoutLogView(APIView):
             "day": day,
             "exercises": default_exercises
         }, status=status.HTTP_200_OK)
+        
+        
+class PlayerWarmupView(APIView):
+    def get(self, request, player_id):
+        try:
+            player = Player.objects.get(id=player_id)
+            active_warmups = ActiveWarmupSerializer(player.active_warmup.all(), many=True).data
+            power_cns_warmups = PowerCNSWarmupSerializer(player.power_cns_warmups.all(), many=True).data
+            return Response({
+                "active_warmups": active_warmups,
+                "power_cns_warmups": power_cns_warmups
+            }, status=status.HTTP_200_OK)
+        except Player.DoesNotExist:
+            return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)

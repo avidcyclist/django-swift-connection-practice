@@ -40,6 +40,30 @@ class Corrective(models.Model):
     def __str__(self):
         return self.name
     
+class ActiveWarmup(models.Model):
+    name = models.CharField(max_length=100)  # Name of the active warmup exercise
+    youtube_link = models.URLField(max_length=200, null=True, blank=True)  # Optional: YouTube link for explanation
+
+    def __str__(self):
+        return self.name
+
+
+class PowerCNSWarmup(models.Model):
+    name = models.CharField(max_length=100)  # Name of the warmup (e.g., "Day 1 Power CNS Warmup")
+    day = models.IntegerField()  # Day number (e.g., 1, 2, 3, 4)
+
+    def __str__(self):
+        return f"{self.name} (Day {self.day})"
+
+
+class PowerCNSExercise(models.Model):
+    warmup = models.ForeignKey(PowerCNSWarmup, on_delete=models.CASCADE, related_name="exercises")  # Link to the warmup
+    name = models.CharField(max_length=100)  # Name of the exercise
+    youtube_link = models.URLField(max_length=200, null=True, blank=True)  # Optional: YouTube link for explanation
+
+    def __str__(self):
+        return f"{self.name} ({self.warmup.name})"
+    
     
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
@@ -47,6 +71,9 @@ class Player(models.Model):
     age = models.IntegerField()
     team = models.CharField(max_length=100)
     correctives = models.ManyToManyField(Corrective, blank=True, related_name="players")  # Many-to-Many relationship
+    active_warmup = models.ManyToManyField(ActiveWarmup, blank=True, related_name="players")  # Many-to-Many relationship
+    power_cns_warmups = models.ManyToManyField(PowerCNSWarmup, blank=True, related_name="players")  # Many-to-Many relationship
+
 
     def __str__(self):
         return self.name
