@@ -216,27 +216,17 @@ class GetWorkoutLogView(APIView):
             day=day
         ).order_by('order')
 
-        # Prepare the response data
-        response_data = {
-            "id": log.id if log else None,
-            "player": player_id,
-            "week": week,
-            "day": day,
-            "exercises": []
-        }
-
-        # If a log exists, merge the log data with the default workouts
+        # If a log exists, adjust it to match the current workouts
         if log:
             log_data = WorkoutLogSerializer(log).data
+            adjusted_exercises = []
+
             for workout in current_workouts:
                 # Find the matching exercise in the log
                 exercise_log = next(
                     (e for e in log_data['exercises'] if e['exercise'] == workout.workout.exercise),
                     None
                 )
-
-                # Include default RPE from PlayerPhaseWorkout
-                default_rpe = workout.rpe
 
                 if exercise_log:
                     # Adjust the sets if they don't match
@@ -250,32 +240,42 @@ class GetWorkoutLogView(APIView):
                         exercise_log['sets'].pop()
 
                     # Add default RPE to the exercise log
-                    exercise_log["default_rpe"] = default_rpe
-                    response_data["exercises"].append(exercise_log)
+                    exercise_log['default_rpe'] = workout.rpe  # Add default RPE from PlayerPhaseWorkout
+                    adjusted_exercises.append(exercise_log)
                 else:
                     # Add a new exercise if it wasn't in the log
-                    response_data["exercises"].append({
+                    adjusted_exercises.append({
                         "exercise": workout.workout.exercise,
-                        "default_rpe": default_rpe,
+                        "default_rpe": workout.rpe,  # Add default RPE from PlayerPhaseWorkout
                         "sets": [
                             {"weight": 0.0, "set_number": i + 1, "rpe": 0.0}
                             for i in range(workout.sets)
                         ]
                     })
 
-        else:
-            # If no log exists, return the default workouts with default RPE
-            for workout in current_workouts:
-                response_data["exercises"].append({
-                    "exercise": workout.workout.exercise,
-                    "default_rpe": workout.rpe,  # Include default RPE
-                    "sets": [
-                        {"weight": None, "set_number": i + 1, "rpe": None}
-                        for i in range(workout.sets)
-                    ]
-                })
+            log_data['exercises'] = adjusted_exercises
+            return Response(log_data, status=status.HTTP_200_OK)
 
-        return Response(response_data, status=status.HTTP_200_OK)
+        # If no log exists, return a default response with the current workouts
+        default_exercises = [
+            {
+                "exercise": workout.workout.exercise,
+                "default_rpe": workout.rpe,  # Add default RPE from PlayerPhaseWorkout
+                "sets": [
+                    {"weight": None, "set_number": i + 1, "rpe": None}
+                    for i in range(workout.sets)
+                ]
+            }
+            for workout in current_workouts
+        ]
+
+        return Response({
+            "id": None,
+            "player": player_id,
+            "week": week,
+            "day": day,
+            "exercises": default_exercises
+        }, status=status.HTTP_200_OK)
         
         
 class PlayerWarmupView(APIView):
