@@ -2,7 +2,7 @@ from django.urls import path
 from .views import PlayerInfoView, WorkoutView, PlayerPhaseView, PlayerWarmupView, GetWorkoutLogView, save_workout_log, get_workout_logs, get_phase_workouts_by_week, get_players, get_player_id, get_player_correctives, get_phase_workouts_by_day
 
 urlpatterns = [
-    path('api/player-info/', PlayerInfoView.as_view(), name='player-info'),
+    path('api/player-info/<int:player_id>/', PlayerInfoView.as_view(), name='player-info'),
     path('api/player-workout/', WorkoutView.as_view(), name='player-workout'),
     path('api/player-phases/<int:player_id>/', PlayerPhaseView.as_view(), name='player-phases'),
     path('api/save-workout-log/', save_workout_log, name='save-workout-log'),

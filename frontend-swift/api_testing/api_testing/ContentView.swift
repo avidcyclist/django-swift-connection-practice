@@ -47,7 +47,7 @@ struct ContentView: View {
             .navigationDestination(for: NavigationDestination.self) { destination in
                 switch destination {
                 case .myProfile:
-                    MyProfileView() // Pass the hardcoded playerId here
+                    MyProfileView(playerId: playerId) // Pass the hardcoded playerId here
                 case .workouts:
                     WorkoutsView(playerId: playerId, playerName: playerName) // Pass the hardcoded playerId here
                 case .throwing:

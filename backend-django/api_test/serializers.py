@@ -44,11 +44,10 @@ class CorrectiveSerializer(serializers.ModelSerializer):
                 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    correctives = CorrectiveSerializer(many=True)  # Include correctives in the player data
 
     class Meta:
         model = Player
-        fields = ["id", "name", "age", "team", "correctives", "active_warmup", "power_cns_warmups"]  # Include active warmup and power CNS warmups
+        fields = ["id", "name", "age", "team"]  # Include active warmup and power CNS warmups
         
 class PhaseWorkoutsResponseSerializer(serializers.Serializer):
     phase_name = serializers.CharField()

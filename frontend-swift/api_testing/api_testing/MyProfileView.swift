@@ -18,43 +18,42 @@ struct MyProfileView: View {
         }
     }
 
-    func fetchAPIResponse(endpoint: String) {
-        guard let url = URL(string: "\(baseURL)/api/\(endpoint)/") else {
-            apiResponse = ["Invalid URL"]
+func fetchAPIResponse(endpoint: String) {
+    guard let url = URL(string: "\(baseURL)/api/\(endpoint)/") else {
+        apiResponse = ["Invalid URL"]
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning")
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            DispatchQueue.main.async {
+                apiResponse = ["Error: \(error.localizedDescription)"]
+            }
             return
         }
 
-        var request = URLRequest(url: url)
-        request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning")
-
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    apiResponse = ["Error: \(error.localizedDescription)"]
-                }
-                return
-            }
-
-            if let data = data {
-                do {
-                    if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
-                        DispatchQueue.main.async {
-                            apiResponse = jsonArray.map { dict in
-                                let name = dict["name"] as? String ?? "N/A"
-                                let age = dict["age"] as? Int ?? 0
-                                let team = dict["team"] as? String ?? "N/A"
-                                return "Name: \(name), Age: \(age), Team: \(team)"
-                            }
-                        }
-                    }
-                } catch {
+        if let data = data {
+            do {
+                // Parse the response as a single dictionary
+                if let jsonDict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     DispatchQueue.main.async {
-                        apiResponse = ["Error decoding JSON"]
+                        let name = jsonDict["name"] as? String ?? "N/A"
+                        let age = jsonDict["age"] as? Int ?? 0
+                        let team = jsonDict["team"] as? String ?? "N/A"
+                        apiResponse = ["Name: \(name)", "Age: \(age)", "Team: \(team)"]
                     }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    apiResponse = ["Error decoding JSON"]
                 }
             }
         }
-
-        task.resume()
     }
+
+    task.resume()
+}
 }
