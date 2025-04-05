@@ -51,6 +51,7 @@ class ActiveWarmup(models.Model):
 class PowerCNSWarmup(models.Model):
     name = models.CharField(max_length=100)  # Name of the warmup (e.g., "Day 1 Power CNS Warmup")
     day = models.IntegerField()  # Day number (e.g., 1, 2, 3, 4)
+    youtube_link = models.URLField(max_length=200, null=True, blank=True)  # Optional: YouTube link for explanation
 
     def __str__(self):
         return f"{self.name} (Day {self.day})"
@@ -107,7 +108,8 @@ class PlayerPhase(models.Model):
                         week=workout.week,
                         day=workout.day,
                         order=workout.order,
-                        rpe=workout.default_rpe
+                        rpe=workout.default_rpe,
+                        player_rpe=[None] * len(workout.default_rpe)  
                     )
 
         # Save the PlayerPhase instance
@@ -142,6 +144,7 @@ class PlayerPhaseWorkout(models.Model):
     day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
     order = models.IntegerField(default=1)  # Order of the workout in the day
     rpe = models.JSONField(default=list)  # Custom RPE values
+    player_rpe = models.JSONField(default=list, blank=True)  # Player-entered RPE values (mutable)
 
     def __str__(self):
         return f"{self.player_phase.player.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"

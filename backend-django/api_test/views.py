@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, PlayerPhaseWorkout
+from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, PlayerPhaseWorkout, PowerCNSExercise, PowerCNSWarmup, Corrective, ActiveWarmup
 from django.http import JsonResponse
 from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PlayerPhaseWorkoutSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer, ActiveWarmupSerializer, PowerCNSWarmupSerializer
 
@@ -222,6 +222,7 @@ class GetWorkoutLogView(APIView):
             adjusted_exercises = []
 
             for workout in current_workouts:
+                print(f"Workout: {workout.workout.exercise}, RPE: {workout.rpe}")
                 # Find the matching exercise in the log
                 exercise_log = next(
                     (e for e in log_data['exercises'] if e['exercise'] == workout.workout.exercise),
@@ -229,24 +230,16 @@ class GetWorkoutLogView(APIView):
                 )
 
                 if exercise_log:
-                    # Adjust the sets if they don't match
-                    while len(exercise_log['sets']) < workout.sets:
-                        exercise_log['sets'].append({
-                            "weight": 0.0,
-                            "set_number": len(exercise_log['sets']) + 1,
-                            "rpe": 0.0
-                        })
-                    while len(exercise_log['sets']) > workout.sets:
-                        exercise_log['sets'].pop()
-
-                    # Add default RPE to the exercise log
-                    exercise_log['default_rpe'] = workout.rpe  # Add default RPE from PlayerPhaseWorkout
+                    # Add default RPE and player RPE to the exercise log
+                    exercise_log['default_rpe'] = workout.rpe
+                    exercise_log['player_rpe'] = workout.player_rpe
                     adjusted_exercises.append(exercise_log)
                 else:
                     # Add a new exercise if it wasn't in the log
                     adjusted_exercises.append({
                         "exercise": workout.workout.exercise,
-                        "default_rpe": workout.rpe,  # Add default RPE from PlayerPhaseWorkout
+                        "default_rpe": workout.rpe,
+                        "player_rpe": [None] * len(workout.rpe),
                         "sets": [
                             {"weight": 0.0, "set_number": i + 1, "rpe": 0.0}
                             for i in range(workout.sets)
@@ -260,7 +253,8 @@ class GetWorkoutLogView(APIView):
         default_exercises = [
             {
                 "exercise": workout.workout.exercise,
-                "default_rpe": workout.rpe,  # Add default RPE from PlayerPhaseWorkout
+                "default_rpe": workout.rpe,
+                "player_rpe": [None] * len(workout.rpe),
                 "sets": [
                     {"weight": None, "set_number": i + 1, "rpe": None}
                     for i in range(workout.sets)
@@ -277,16 +271,32 @@ class GetWorkoutLogView(APIView):
             "exercises": default_exercises
         }, status=status.HTTP_200_OK)
         
-        
 class PlayerWarmupView(APIView):
     def get(self, request, player_id):
         try:
+            # Fetch the player
             player = Player.objects.get(id=player_id)
+
+            # Fetch active warmups
             active_warmups = ActiveWarmupSerializer(player.active_warmup.all(), many=True).data
-            power_cns_warmups = PowerCNSWarmupSerializer(player.power_cns_warmups.all(), many=True).data
+
+            # Fetch power CNS warmups
+            power_cns_warmups = PowerCNSWarmup.objects.all().order_by("day")
+            power_cns_warmups_data = [
+                {
+                    "id": warmup.id,
+                    "name": warmup.name,
+                    "day": warmup.day,
+                    "youtube_link": warmup.youtube_link
+                }
+                for warmup in power_cns_warmups
+            ]
+
+            # Return the response
             return Response({
                 "active_warmups": active_warmups,
-                "power_cns_warmups": power_cns_warmups
+                "power_cns_warmups": power_cns_warmups_data
             }, status=status.HTTP_200_OK)
+
         except Player.DoesNotExist:
             return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)

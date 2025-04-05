@@ -14,7 +14,7 @@ class PowerCNSExerciseInline(admin.TabularInline):
 
 @admin.register(PowerCNSWarmup)
 class PowerCNSWarmupAdmin(admin.ModelAdmin):
-    list_display = ("name", "day")
+    list_display = ("name", "day", "youtube_link")
     inlines = [PowerCNSExerciseInline]
 
 
