@@ -7,48 +7,57 @@ struct RoutineDetailView: View {
     @State private var errorMessage: String? = nil // Error message
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if isLoading {
-                ProgressView("Loading routine details...") // Show loading indicator
-                    .padding()
-            } else if let errorMessage = errorMessage {
-                Text("Error: \(errorMessage)") // Show error message
-                    .foregroundColor(.red)
-                    .padding()
-            } else if let routine = routine {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text(routine.name)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding(.bottom)
-
-                    if let description = routine.description, !description.isEmpty {
-                        Text(description)
-                            .font(.body)
+        ScrollView { // Make the entire view scrollable
+            VStack(alignment: .leading, spacing: 20) {
+                if isLoading {
+                    ProgressView("Loading routine details...") // Show loading indicator
+                        .padding()
+                } else if let errorMessage = errorMessage {
+                    Text("Error: \(errorMessage)") // Show error message
+                        .foregroundColor(.red)
+                        .padding()
+                } else if let routine = routine {
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Header Section
+                        Text(routine.name)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                             .padding(.bottom)
-                    }
+                            .frame(maxWidth: .infinity, alignment: .leading) // Align to the left
 
-                    Text("Drills")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .padding(.bottom)
+                        if let description = routine.description, !description.isEmpty {
+                            Text(description)
+                                .font(.body)
+                                .foregroundColor(.gray)
+                                .padding(.bottom)
+                        }
 
-                    // Use DrillCard for each drill
-                    ForEach(routine.drills) { drill in
-                        DrillCard(drill: drill)
+                        // Drills Section
+                        Text("Drills")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.bottom)
+
+                        // Use DrillCard for each drill
+                        ForEach(routine.drills) { drill in
+                            DrillCard(drill: drill)
+                                .padding(.bottom, 10) // Add spacing between cards
+                        }
                     }
-                }
-                .padding()
-            } else {
-                Text("No routine details available.")
-                    .foregroundColor(.gray)
                     .padding()
+                } else {
+                    Text("No routine details available.")
+                        .foregroundColor(.gray)
+                        .padding()
+                }
             }
+            .padding()
         }
+        .navigationTitle("Routine Details") // Add a navigation title
+        .navigationBarTitleDisplayMode(.inline) // Make the title inline
         .onAppear {
             fetchRoutineDetails() // Fetch routine details when the view appears
         }
-        .navigationTitle("Routine Details")
     }
 
     // Function to fetch routine details from the API
@@ -119,7 +128,7 @@ struct DrillCard: View {
             }
         }
         .padding()
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading) // Stretch horizontally and align left
         .background(Color(.systemGray6))
         .cornerRadius(10)
         .shadow(radius: 2)
