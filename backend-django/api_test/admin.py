@@ -60,7 +60,12 @@ admin.site.register(Corrective)
 class DrillInline(admin.TabularInline):
     model = Drill
     extra = 0  # Do not show extra empty rows by default
-
+    
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.form.base_fields["name"].required = False  # Make 'name' optional
+        formset.form.base_fields["sets_reps"].required = False  # Make 'sets_reps' optional
+        return formset
 
 # Admin for ThrowingRoutine with inline drills
 @admin.register(ThrowingRoutine)

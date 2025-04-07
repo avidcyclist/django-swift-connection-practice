@@ -162,9 +162,11 @@ class ThrowingRoutine(models.Model):
 
 class Drill(models.Model):
     routine = models.ForeignKey(ThrowingRoutine, on_delete=models.CASCADE, related_name="drills")
-    name = models.CharField(max_length=255)  # e.g., "Reverse Throws"
-    sets_reps = models.CharField(max_length=50)  # e.g., "2x10"
+    name = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Reverse Throws"
+    sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2x10"
     weight = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2lb"
+    distance = models.CharField(max_length=50, blank=True, null=True)  # e.g., "60ft"
+    throws = models.CharField(max_length=50, blank=True, null=True)  # e.g., "5-15"
     rpe = models.CharField(max_length=50, blank=True, null=True)  # e.g., "80-90%"
     video_link = models.URLField(blank=True, null=True)  # Optional instructional video
 
@@ -206,7 +208,7 @@ class PlayerThrowingProgramDay(models.Model):
     day_number = models.IntegerField()  # e.g., "Day 1"
     name = models.CharField(max_length=255)  # e.g., "GAME DAY"
     warmup = models.TextField(blank=True, null=True)  # e.g., "WU, ACT"
-    plyos = models.TextField(blank=True, null=True) # Reference routines # Reference routines
+    plyos = models.TextField(blank=True, null=True) #
     throwing = models.TextField(blank=True, null=True)  # e.g., "Long Toss to Preferred Distance"
     velo_command = models.TextField(blank=True, null=True)  # e.g., "3-5 Pulldowns"
     arm_care = models.TextField(blank=True, null=True)  # e.g., "Light Recovery"

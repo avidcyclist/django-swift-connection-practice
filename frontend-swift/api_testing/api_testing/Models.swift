@@ -139,18 +139,23 @@ struct RoutineDetail: Decodable {
 }
 
 // Model for a drill
+// Model for a drill
 struct Drill: Identifiable, Decodable {
     let id: Int
-    let name: String
-    let setsReps: String?
+    let name: String? // Make name optional
+    let setsReps: String? // Make setsReps optional
     let weight: String?
+    let distance: String?
+    let throwsCount: String? // Use a different name for 'throws'
     let rpe: String?
     let videoLink: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case setsReps = "sets_reps"
-        case weight, rpe
+        case weight, distance
+        case throwsCount = "throws" // Map 'throws' from JSON to 'throwsCount'
+        case rpe
         case videoLink = "video_link"
     }
 }

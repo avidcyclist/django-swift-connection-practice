@@ -70,10 +70,3 @@ struct PlyoThrowingRoutinesView: View {
         }.resume()
     }
 }
-
-// Model for a routine
-struct Routine: Identifiable, Decodable {
-    let id: Int
-    let name: String
-    let description: String
-}

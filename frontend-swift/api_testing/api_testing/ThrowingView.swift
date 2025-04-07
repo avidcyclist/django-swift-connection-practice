@@ -16,7 +16,7 @@ struct ThrowingView: View {
                     BlockView(title: "Active Warmup", color: .blue)
                 }
 
-                NavigationLink(destination: ThrowingProgramView(playerId: playerId)) {
+                NavigationLink(destination: ThrowingProgramView(playerId: playerId)) { // Fixed typo here
                     BlockView(title: "My Program", color: .green)
                 }
 
@@ -33,26 +33,31 @@ struct ThrowingView: View {
     }
 }
 
-
 struct ThrowingProgramView: View {
+    let playerId: Int
+
     var body: some View {
-        Text("My Program Page")
+        Text("My Program Page for Player \(playerId)")
             .font(.largeTitle)
             .padding()
     }
 }
 
 struct PlyoThrowingRoutinesView: View {
+    let playerId: Int
+
     var body: some View {
-        Text("Plyo / Throwing Routines Page")
+        Text("Plyo / Throwing Routines Page for Player \(playerId)")
             .font(.largeTitle)
             .padding()
     }
 }
 
 struct ArmCareView: View {
+    let playerId: Int
+
     var body: some View {
-        Text("Arm Care Page")
+        Text("Arm Care Page for Player \(playerId)")
             .font(.largeTitle)
             .padding()
     }

@@ -33,32 +33,9 @@ struct RoutineDetailView: View {
                         .fontWeight(.bold)
                         .padding(.bottom)
 
+                    // Use DrillCard for each drill
                     ForEach(routine.drills) { drill in
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(drill.name)
-                                .font(.headline)
-
-                            if let setsReps = drill.setsReps {
-                                Text("Sets/Reps: \(setsReps)")
-                            }
-
-                            if let weight = drill.weight {
-                                Text("Weight: \(weight)")
-                            }
-
-                            if let rpe = drill.rpe {
-                                Text("RPE: \(rpe)")
-                            }
-
-                            if let videoLink = drill.videoLink {
-                                Link("Watch Video", destination: URL(string: videoLink)!)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .shadow(radius: 2)
+                        DrillCard(drill: drill)
                     }
                 }
                 .padding()
@@ -103,5 +80,48 @@ struct RoutineDetailView: View {
                 }
             }
         }.resume()
+    }
+}
+
+struct DrillCard: View {
+    let drill: Drill
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let name = drill.name {
+                Text(name)
+                    .font(.headline)
+            }
+
+            if let setsReps = drill.setsReps {
+                Text("Sets/Reps: \(setsReps)")
+            }
+
+            if let weight = drill.weight {
+                Text("Weight: \(weight)")
+            }
+
+            if let distance = drill.distance {
+                Text("Distance: \(distance)")
+            }
+
+            if let throwsCount = drill.throwsCount {
+                Text("Throws: \(throwsCount)")
+            }
+
+            if let rpe = drill.rpe {
+                Text("RPE: \(rpe)")
+            }
+
+            if let videoLink = drill.videoLink, let url = URL(string: videoLink) {
+                Link("Watch Video", destination: url)
+                    .foregroundColor(.blue)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .shadow(radius: 2)
     }
 }

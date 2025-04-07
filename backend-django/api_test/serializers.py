@@ -113,7 +113,7 @@ class PowerCNSWarmupSerializer(serializers.ModelSerializer):
 class DrillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Drill
-        fields = ["id", "name", "sets_reps", "weight", "rpe", "video_link"]
+        fields = ["id", "name", "sets_reps", "weight", "distance", "throws", "rpe", "video_link"]
 
 
 class ThrowingRoutineSerializer(serializers.ModelSerializer):
