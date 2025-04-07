@@ -122,3 +122,19 @@ struct PlayerWarmupResponse: Codable {
     let active_warmups: [ActiveWarmup]
     let power_cns_warmups: [PowerCNSWarmup]
 }
+
+// Reusable BlockView for navigation buttons
+struct BlockView: View {
+    let title: String
+    let color: Color
+
+    var body: some View {
+        Text(title)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(color)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .font(.headline)
+    }
+}

@@ -148,7 +148,6 @@ class ThrowingProgramSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "days"]
         
 class PlayerThrowingProgramDaySerializer(serializers.ModelSerializer):
-    plyos = ThrowingRoutineSerializer(many=True, read_only=True)  # Include routines
 
     class Meta:
         model = PlayerThrowingProgramDay
