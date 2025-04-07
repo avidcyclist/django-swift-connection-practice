@@ -1,5 +1,23 @@
 from rest_framework import serializers
-from .models import Player, Workout, ActiveWarmup, PowerCNSWarmup, PowerCNSExercise, Phase, PlayerPhase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
+from .models import (
+    Player,
+    Workout,
+    ActiveWarmup,
+    PowerCNSWarmup,
+    PowerCNSExercise,
+    Phase,
+    PlayerPhase,
+    WorkoutLog,
+    PhaseWorkout,
+    Corrective,
+    PlayerPhaseWorkout,
+    ThrowingRoutine,
+    ThrowingProgram,
+    ThrowingProgramDay,
+    PlayerThrowingProgram,
+    PlayerThrowingProgramDay,
+    Drill,
+)
 
 
 
@@ -91,3 +109,65 @@ class PowerCNSWarmupSerializer(serializers.ModelSerializer):
     class Meta:
         model = PowerCNSWarmup
         fields = ["id", "name", "day", "exercises"]
+        
+class DrillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Drill
+        fields = ["id", "name", "sets_reps", "weight", "rpe", "video_link"]
+
+
+class ThrowingRoutineSerializer(serializers.ModelSerializer):
+    drills = DrillSerializer(many=True, read_only=True)  # Include associated drills
+
+    class Meta:
+        model = ThrowingRoutine
+        fields = ["id", "name", "description", "drills"]
+        
+class ThrowingProgramDaySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ThrowingProgramDay
+        fields = [
+            "id",
+            "day_number",
+            "name",
+            "warmup",
+            "plyos",
+            "throwing",
+            "velo_command",
+            "arm_care",
+            "lifting",
+            "conditioning",
+        ]
+        
+class ThrowingProgramSerializer(serializers.ModelSerializer):
+    days = ThrowingProgramDaySerializer(many=True, read_only=True)  # Include program days
+
+    class Meta:
+        model = ThrowingProgram
+        fields = ["id", "name", "days"]
+        
+class PlayerThrowingProgramDaySerializer(serializers.ModelSerializer):
+    plyos = ThrowingRoutineSerializer(many=True, read_only=True)  # Include routines
+
+    class Meta:
+        model = PlayerThrowingProgramDay
+        fields = [
+            "id",
+            "day_number",
+            "name",
+            "warmup",
+            "plyos",
+            "throwing",
+            "velo_command",
+            "arm_care",
+            "lifting",
+            "conditioning",
+        ]
+        
+class PlayerThrowingProgramSerializer(serializers.ModelSerializer):
+    days = PlayerThrowingProgramDaySerializer(many=True, read_only=True)  # Include player program days
+
+    class Meta:
+        model = PlayerThrowingProgram
+        fields = ["id", "player", "program", "start_date", "end_date", "days"]

@@ -4,12 +4,46 @@ import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics
+from django.db import connection
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from .models import Player, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, PlayerPhaseWorkout, PowerCNSExercise, PowerCNSWarmup, Corrective, ActiveWarmup
 from django.http import JsonResponse
-from .serializers import PlayerSerializer, WorkoutSerializer, PlayerPhaseSerializer, WorkoutLogSerializer, CorrectiveSerializer, PlayerPhaseWorkoutSerializer, PhaseWorkoutSerializer, PhaseWorkoutsResponseSerializer, ActiveWarmupSerializer, PowerCNSWarmupSerializer
+
+from .models import (
+    Player,
+    Workout,
+    PlayerPhase,
+    Phase,
+    WorkoutLog,
+    PhaseWorkout,
+    PlayerPhaseWorkout,
+    PowerCNSExercise,
+    PowerCNSWarmup,
+    Corrective,
+    ActiveWarmup,
+    PlayerThrowingProgram,
+    ThrowingProgram,
+    Player,
+    PlayerThrowingProgramDay,
+    ThrowingRoutine,
+)
+
+from .serializers import (
+    PlayerSerializer,
+    WorkoutSerializer,
+    PlayerPhaseSerializer,
+    WorkoutLogSerializer,
+    CorrectiveSerializer,
+    PlayerPhaseWorkoutSerializer,
+    PhaseWorkoutSerializer,
+    PhaseWorkoutsResponseSerializer,
+    ActiveWarmupSerializer,
+    PowerCNSWarmupSerializer,
+    ThrowingProgramSerializer,
+    PlayerThrowingProgramSerializer,
+    ThrowingRoutineSerializer,
+)
 
 class PlayerInfoView(APIView):
     def get(self, request, player_id):
@@ -58,6 +92,7 @@ class PlayerPhaseView(APIView):
                     "end_date": player_phase.end_date,
                     "workouts": workouts_data,
                 })
+                
 
             return Response(response_data, status=status.HTTP_200_OK)
         except PlayerPhase.DoesNotExist:
@@ -300,3 +335,84 @@ class PlayerWarmupView(APIView):
 
         except Player.DoesNotExist:
             return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+# List all throwing programs
+class ThrowingProgramListView(generics.ListAPIView):
+    queryset = ThrowingProgram.objects.all()
+    serializer_class = ThrowingProgramSerializer
+
+
+# Retrieve a specific throwing program
+class ThrowingProgramDetailView(generics.RetrieveAPIView):
+    queryset = ThrowingProgram.objects.all()
+    serializer_class = ThrowingProgramSerializer
+    
+# List all player-specific programs
+class PlayerThrowingProgramListView(generics.ListAPIView):
+    queryset = PlayerThrowingProgram.objects.all()
+    serializer_class = PlayerThrowingProgramSerializer
+
+
+# Retrieve a specific player-specific program
+class PlayerThrowingProgramDetailView(generics.RetrieveAPIView):
+    queryset = PlayerThrowingProgram.objects.all()
+    serializer_class = PlayerThrowingProgramSerializer
+
+
+# Assign a base program to a player
+class AssignThrowingProgramView(generics.CreateAPIView):
+    serializer_class = PlayerThrowingProgramSerializer
+
+    def create(self, request, *args, **kwargs):
+        player_id = request.data.get("player_id")
+        program_id = request.data.get("program_id")
+
+        try:
+            # Fetch the player and base program
+            player = Player.objects.get(id=player_id)
+            base_program = ThrowingProgram.objects.get(id=program_id)
+
+            # Create a new player-specific program
+            player_program = PlayerThrowingProgram.objects.create(
+                player=player,
+                program=base_program,
+                start_date=base_program.start_date,
+                end_date=base_program.end_date,
+            )
+
+            # Copy the days from the base program
+            base_days = base_program.days.all()
+            for base_day in base_days:
+                player_day = PlayerThrowingProgramDay.objects.create(
+                    player_program=player_program,
+                    day_number=base_day.day_number,
+                    name=base_day.name,
+                    warmup=base_day.warmup,
+                    throwing=base_day.throwing,
+                    velo_command=base_day.velo_command,
+                    arm_care=base_day.arm_care,
+                    lifting=base_day.lifting,
+                    conditioning=base_day.conditioning,
+                )
+                # Copy routines (ManyToManyField)
+                player_day.plyos.set(base_day.plyos.all())
+
+            serializer = self.get_serializer(player_program)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Player.DoesNotExist:
+            return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)
+        except ThrowingProgram.DoesNotExist:
+            return Response({"error": "Base program not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+# List all throwing routines
+class ThrowingRoutineListView(generics.ListAPIView):
+    queryset = ThrowingRoutine.objects.all()
+    serializer_class = ThrowingRoutineSerializer
+
+
+# Retrieve a specific throwing routine
+class ThrowingRoutineDetailView(generics.RetrieveAPIView):
+    queryset = ThrowingRoutine.objects.all()
+    serializer_class = ThrowingRoutineSerializer

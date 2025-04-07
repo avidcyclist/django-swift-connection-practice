@@ -1,5 +1,26 @@
 from django.contrib import admin
-from .models import Player, ActiveWarmup, PowerCNSExercise, PowerCNSWarmup, Workout, PlayerPhase, Phase, WorkoutLog, PhaseWorkout, Corrective, PlayerPhaseWorkout
+from django.forms import Textarea
+from django.db import models
+
+from .models import (
+    Player,
+    ActiveWarmup,
+    PowerCNSExercise,
+    PowerCNSWarmup,
+    Workout,
+    PlayerPhase,
+    Phase,
+    WorkoutLog,
+    PhaseWorkout,
+    Corrective,
+    PlayerPhaseWorkout,
+    ThrowingRoutine,
+    Drill,
+    ThrowingProgram,
+    ThrowingProgramDay,
+    PlayerThrowingProgram,
+    PlayerThrowingProgramDay,
+)
 
 @admin.register(ActiveWarmup)
 class ActiveWarmupAdmin(admin.ModelAdmin):
@@ -31,6 +52,44 @@ admin.site.register(Phase)
 admin.site.register(WorkoutLog)
 admin.site.register(PhaseWorkout)
 admin.site.register(Corrective)
+
+
+
+
+# Inline admin for Drill (to manage drills within a routine)
+class DrillInline(admin.TabularInline):
+    model = Drill
+    extra = 0  # Do not show extra empty rows by default
+
+
+# Admin for ThrowingRoutine with inline drills
+@admin.register(ThrowingRoutine)
+class ThrowingRoutineAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    inlines = [DrillInline]
+
+
+# Inline admin for ThrowingProgramDay (to manage days within a program)
+class ThrowingProgramDayInline(admin.TabularInline):
+    model = ThrowingProgramDay
+    extra = 0  # Do not show extra empty rows by default
+    formfield_overrides = {
+        models.TextField: {"widget": Textarea(attrs={"rows": 2, "cols": 40})},  # Compact text fields
+    }    
+
+# Admin for ThrowingProgram with inline days
+@admin.register(ThrowingProgram)
+class ThrowingProgramAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+    inlines = [ThrowingProgramDayInline]
+
+
+# Admin for PlayerThrowingProgramDay
+@admin.register(PlayerThrowingProgramDay)
+class PlayerThrowingProgramDayAdmin(admin.ModelAdmin):
+    list_display = ("player_program", "day_number", "name")
+    search_fields = ("player_program__player__name", "name")
 
 
 
@@ -74,3 +133,70 @@ class PlayerPhaseAdmin(admin.ModelAdmin):
                 )
 
         return super().change_view(request, object_id, form_url, extra_context)
+    
+    
+    
+        
+class PlayerThrowingProgramDayInline(admin.TabularInline):
+    model = PlayerThrowingProgramDay
+    extra = 0  # Do not show extra empty rows by default
+    formfield_overrides = {
+        models.TextField: {"widget": Textarea(attrs={"rows": 2, "cols": 40})},  # Compact text fields
+    }
+    
+    
+@admin.register(PlayerThrowingProgram)
+class PlayerThrowingProgramAdmin(admin.ModelAdmin):
+    list_display = ("player", "program", "start_date", "end_date")
+    inlines = [PlayerThrowingProgramDayInline]
+
+    def save_model(self, request, obj, form, change):
+        # Check if the program has changed
+        if change:
+            # Get the original program before the change
+            original_program = PlayerThrowingProgram.objects.get(pk=obj.pk).program
+
+            # If the program has changed, update the associated days
+            if obj.program != original_program:
+                # Delete existing PlayerThrowingProgramDay entries
+                PlayerThrowingProgramDay.objects.filter(player_program=obj).delete()
+
+                # Populate new days from the new program
+                base_program = obj.program
+                base_days = base_program.days.all()
+                for base_day in base_days:
+                    PlayerThrowingProgramDay.objects.create(
+                        player_program=obj,
+                        day_number=base_day.day_number,
+                        name=base_day.name,
+                        warmup=base_day.warmup,
+                        plyos=base_day.plyos,  # Directly copy the string value
+                        throwing=base_day.throwing,
+                        velo_command=base_day.velo_command,
+                        arm_care=base_day.arm_care,
+                        lifting=base_day.lifting,
+                        conditioning=base_day.conditioning,
+                    )
+
+        # Save the PlayerThrowingProgram object
+        super().save_model(request, obj, form, change)
+
+        # If this is a new program, populate it with data from the base program
+        if not change:  # Only for new objects
+            base_program = obj.program
+            base_days = base_program.days.all()
+            for base_day in base_days:
+                PlayerThrowingProgramDay.objects.create(
+                    player_program=obj,
+                    day_number=base_day.day_number,
+                    name=base_day.name,
+                    warmup=base_day.warmup,
+                    plyos=base_day.plyos,  # Directly copy the string value
+                    throwing=base_day.throwing,
+                    velo_command=base_day.velo_command,
+                    arm_care=base_day.arm_care,
+                    lifting=base_day.lifting,
+                    conditioning=base_day.conditioning,
+                )
+
+admin.site.unregister(PlayerThrowingProgramDay)

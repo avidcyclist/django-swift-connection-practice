@@ -148,3 +148,70 @@ class PlayerPhaseWorkout(models.Model):
 
     def __str__(self):
         return f"{self.player_phase.player.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
+    
+    
+    
+class ThrowingRoutine(models.Model):
+    name = models.CharField(max_length=255)  # e.g., "Plyo Routines"
+    description = models.TextField(blank=True, null=True)  # Optional description
+
+
+    def __str__(self):
+        return self.name
+
+
+class Drill(models.Model):
+    routine = models.ForeignKey(ThrowingRoutine, on_delete=models.CASCADE, related_name="drills")
+    name = models.CharField(max_length=255)  # e.g., "Reverse Throws"
+    sets_reps = models.CharField(max_length=50)  # e.g., "2x10"
+    weight = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2lb"
+    rpe = models.CharField(max_length=50, blank=True, null=True)  # e.g., "80-90%"
+    video_link = models.URLField(blank=True, null=True)  # Optional instructional video
+
+    def __str__(self):
+        return f"{self.routine.name} - {self.name}"
+    
+class ThrowingProgram(models.Model):
+    name = models.CharField(max_length=255)  # e.g., "In Season: Starter"
+
+    def __str__(self):
+        return self.name
+    
+class ThrowingProgramDay(models.Model):
+    program = models.ForeignKey(ThrowingProgram, on_delete=models.CASCADE, related_name="days")
+    day_number = models.IntegerField()  # e.g., "Day 1"
+    name = models.CharField(max_length=255)  # e.g., "GAME DAY"
+    warmup = models.TextField(blank=True, null=True)  # e.g., "WU, ACT"
+    plyos = models.TextField(blank=True, null=True) # Reference routines
+    throwing = models.TextField(blank=True, null=True)  # e.g., "Long Toss to Preferred Distance"
+    velo_command = models.TextField(blank=True, null=True)  # e.g., "3-5 Pulldowns"
+    arm_care = models.TextField(blank=True, null=True)  # e.g., "Light Recovery"
+    lifting = models.TextField(blank=True, null=True)  # e.g., "Day 1 Lift"
+    conditioning = models.TextField(blank=True, null=True)  # e.g., "15min bike"
+
+    def __str__(self):
+        return f"{self.program.name} - Day {self.day_number}: {self.name}"
+    
+class PlayerThrowingProgram(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="throwing_programs")
+    program = models.ForeignKey(ThrowingProgram, on_delete=models.CASCADE)  # Link to the base program
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.player.name} - {self.program.name}"
+    
+class PlayerThrowingProgramDay(models.Model):
+    player_program = models.ForeignKey(PlayerThrowingProgram, on_delete=models.CASCADE, related_name="days")
+    day_number = models.IntegerField()  # e.g., "Day 1"
+    name = models.CharField(max_length=255)  # e.g., "GAME DAY"
+    warmup = models.TextField(blank=True, null=True)  # e.g., "WU, ACT"
+    plyos = models.TextField(blank=True, null=True) # Reference routines # Reference routines
+    throwing = models.TextField(blank=True, null=True)  # e.g., "Long Toss to Preferred Distance"
+    velo_command = models.TextField(blank=True, null=True)  # e.g., "3-5 Pulldowns"
+    arm_care = models.TextField(blank=True, null=True)  # e.g., "Light Recovery"
+    lifting = models.TextField(blank=True, null=True)  # e.g., "Day 1 Lift"
+    conditioning = models.TextField(blank=True, null=True)  # e.g., "15min bike"
+
+    def __str__(self):
+        return f"{self.player_program.player.name} - Day {self.day_number}: {self.name}"

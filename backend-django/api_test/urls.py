@@ -1,5 +1,25 @@
 from django.urls import path
-from .views import PlayerInfoView, WorkoutView, PlayerPhaseView, PlayerWarmupView, GetWorkoutLogView, save_workout_log, get_workout_logs, get_phase_workouts_by_week, get_players, get_player_id, get_player_correctives, get_phase_workouts_by_day
+from .views import (
+    PlayerInfoView,
+    WorkoutView,
+    PlayerPhaseView,
+    PlayerWarmupView,
+    GetWorkoutLogView,
+    save_workout_log,
+    get_workout_logs,
+    get_phase_workouts_by_week,
+    get_players,
+    get_player_id,
+    get_player_correctives,
+    get_phase_workouts_by_day,
+    ThrowingProgramListView,
+    ThrowingProgramDetailView,
+    PlayerThrowingProgramListView,
+    PlayerThrowingProgramDetailView,
+    AssignThrowingProgramView,
+    ThrowingRoutineListView,
+    ThrowingRoutineDetailView,
+)
 
 urlpatterns = [
     path('api/player-info/<int:player_id>/', PlayerInfoView.as_view(), name='player-info'),
@@ -14,4 +34,15 @@ urlpatterns = [
     path('api/player-phases/<int:player_id>/workouts-by-week/', get_phase_workouts_by_week, name='workouts-by-week'),
     path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
     path('api/player-warmup/<int:player_id>/', PlayerWarmupView.as_view(), name='get-active-warmup'),
+    #throwing views
+    path("api/throwing-programs/", ThrowingProgramListView.as_view(), name="throwing-program-list"),
+    path("api/throwing-programs/<int:pk>/", ThrowingProgramDetailView.as_view(), name="throwing-program-detail"),
+    path("api/player-throwing-programs/", PlayerThrowingProgramListView.as_view(), name="player-throwing-program-list"),
+    path("api/player-throwing-programs/<int:pk>/", PlayerThrowingProgramDetailView.as_view(), name="player-throwing-program-detail"),
+    path("api/assign-throwing-program/", AssignThrowingProgramView.as_view(), name="assign-throwing-program"),
+    # Throwing routines
+    path("api/throwing-routines/", ThrowingRoutineListView.as_view(), name="throwing-routine-list"),
+    path("api/throwing-routines/<int:pk>/", ThrowingRoutineDetailView.as_view(), name="throwing-routine-detail"),
+
+
 ]
