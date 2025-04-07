@@ -123,18 +123,34 @@ struct PlayerWarmupResponse: Codable {
     let power_cns_warmups: [PowerCNSWarmup]
 }
 
-// Reusable BlockView for navigation buttons
-struct BlockView: View {
-    let title: String
-    let color: Color
+// Model for a routine
+struct Routine: Identifiable, Decodable {
+    let id: Int
+    let name: String
+    let description: String
+}
 
-    var body: some View {
-        Text(title)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(color)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .font(.headline)
+// Model for routine details
+struct RoutineDetail: Decodable {
+    let id: Int
+    let name: String
+    let description: String?
+    let drills: [Drill]
+}
+
+// Model for a drill
+struct Drill: Identifiable, Decodable {
+    let id: Int
+    let name: String
+    let setsReps: String?
+    let weight: String?
+    let rpe: String?
+    let videoLink: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case setsReps = "sets_reps"
+        case weight, rpe
+        case videoLink = "video_link"
     }
 }

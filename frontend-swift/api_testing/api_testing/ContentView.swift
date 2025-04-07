@@ -51,7 +51,7 @@ struct ContentView: View {
                 case .workouts:
                     WorkoutsView(playerId: playerId, playerName: playerName) // Pass the hardcoded playerId here
                 case .throwing:
-                    ThrowingView()
+                    ThrowingView(playerId: playerId) // Pass playerId here
                 case .nutrition:
                     NutritionView()
                 case .recovery:
@@ -63,15 +63,6 @@ struct ContentView: View {
 }
 
 // Placeholder views for each section
-
-struct ThrowingView: View {
-    var body: some View {
-        Text("Throwing Page")
-            .font(.largeTitle)
-            .padding()
-    }
-}
-
 struct NutritionView: View {
     var body: some View {
         Text("Nutrition Page")

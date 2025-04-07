@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ThrowingView: View {
+    let playerId: Int // Pass the playerId to this view
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Throwing")
@@ -10,19 +12,19 @@ struct ThrowingView: View {
 
             // Navigation blocks for Throwing options
             VStack(spacing: 20) {
-                NavigationLink(destination: ActiveWarmupView()) {
+                NavigationLink(destination: ThrowingActiveWarmupView(playerId: playerId)) {
                     BlockView(title: "Active Warmup", color: .blue)
                 }
 
-                NavigationLink(destination: MyProgramView()) {
+                NavigationLink(destination: ThrowingProgramView(playerId: playerId)) {
                     BlockView(title: "My Program", color: .green)
                 }
 
-                NavigationLink(destination: PlyoThrowingRoutinesView()) {
+                NavigationLink(destination: PlyoThrowingRoutinesView(playerId: playerId)) {
                     BlockView(title: "Plyo / Throwing Routines", color: .orange)
                 }
 
-                NavigationLink(destination: ArmCareView()) {
+                NavigationLink(destination: ArmCareView(playerId: playerId)) {
                     BlockView(title: "Arm Care", color: .red)
                 }
             }
@@ -31,16 +33,8 @@ struct ThrowingView: View {
     }
 }
 
-// Placeholder views for each section
-struct ActiveWarmupView: View {
-    var body: some View {
-        Text("Active Warmup Page")
-            .font(.largeTitle)
-            .padding()
-    }
-}
 
-struct MyProgramView: View {
+struct ThrowingProgramView: View {
     var body: some View {
         Text("My Program Page")
             .font(.largeTitle)
@@ -59,6 +53,16 @@ struct PlyoThrowingRoutinesView: View {
 struct ArmCareView: View {
     var body: some View {
         Text("Arm Care Page")
+            .font(.largeTitle)
+            .padding()
+    }
+}
+
+struct ThrowingActiveWarmupView: View {
+    let playerId: Int
+
+    var body: some View {
+        Text("Active Warmup for Player \(playerId)")
             .font(.largeTitle)
             .padding()
     }
