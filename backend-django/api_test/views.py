@@ -354,9 +354,14 @@ class PlayerThrowingProgramListView(generics.ListAPIView):
 
 
 # Retrieve a specific player-specific program
-class PlayerThrowingProgramDetailView(generics.RetrieveAPIView):
-    queryset = PlayerThrowingProgram.objects.all()
+class PlayerThrowingProgramListView(generics.ListAPIView):
     serializer_class = PlayerThrowingProgramSerializer
+
+    def get_queryset(self):
+        player_id = self.request.query_params.get('player_id')
+        if player_id:
+            return PlayerThrowingProgram.objects.filter(player__id=player_id)
+        return PlayerThrowingProgram.objects.all()
 
 
 # Assign a base program to a player
@@ -416,3 +421,8 @@ class ThrowingRoutineListView(generics.ListAPIView):
 class ThrowingRoutineDetailView(generics.RetrieveAPIView):
     queryset = ThrowingRoutine.objects.all()
     serializer_class = ThrowingRoutineSerializer
+    
+# Retrieve a specific player-specific program
+class PlayerThrowingProgramDetailView(generics.RetrieveAPIView):
+    queryset = PlayerThrowingProgram.objects.all()
+    serializer_class = PlayerThrowingProgramSerializer

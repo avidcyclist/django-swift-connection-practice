@@ -159,3 +159,48 @@ struct Drill: Identifiable, Decodable {
         case videoLink = "video_link"
     }
 }
+
+struct PlayerThrowingProgram: Decodable {
+    let id: Int
+    let player: Int
+    let program: Int
+    let startDate: String
+    let endDate: String
+    let days: [PlayerThrowingProgramDay]
+
+    enum CodingKeys: String, CodingKey {
+        case id, player, program
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case days
+    }
+}
+
+struct PlayerThrowingProgramDay: Decodable, Identifiable {
+    let id: Int
+    let dayNumber: Int
+    let name: String?
+    let warmup: String?
+    let plyos: String?
+    let throwing: String?
+    let veloCommand: String?
+    let armCare: String?
+    let lifting: String?
+    let conditioning: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case dayNumber = "day_number"
+        case name, warmup, plyos, throwing
+        case veloCommand = "velo_command"
+        case armCare = "arm_care"
+        case lifting, conditioning
+    }
+}
+
+struct Player: Codable {
+    let id: Int
+    let name: String
+    let age: Int
+    let team: String
+}

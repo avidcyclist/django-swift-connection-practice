@@ -9,56 +9,114 @@ enum NavigationDestination: String, Hashable {
 }
 
 struct ContentView: View {
-    @State private var playerId: Int = 1 // Hardcoded playerId for testing
-    @State private var playerName: String = "Walter"
+    @State private var playerId: Int = 1 // Hardcoded playerId for now
+    @State private var playerName: String = "Mitch" // Hardcoded player name for now
+    @State private var programId: Int? = nil // Dynamically fetched programId
+    @State private var isLoading = true
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Text("Welcome, \(playerName)!")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding()
-
-                // Navigation blocks
+            if isLoading {
+                ProgressView("Loading Program Data...")
+            } else if let errorMessage = errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+            } else {
                 VStack(spacing: 20) {
-                    NavigationLink(value: NavigationDestination.myProfile) {
-                        BlockView(title: "My Profile", color: .blue)
-                    }
+                    Text("Welcome, \(playerName)!")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding()
 
-                    NavigationLink(value: NavigationDestination.workouts) {
-                        BlockView(title: "Workouts", color: .green)
-                    }
+                    // Navigation blocks
+                    VStack(spacing: 20) {
+                        NavigationLink(value: NavigationDestination.myProfile) {
+                            BlockView(title: "My Profile", color: .blue)
+                        }
 
-                    NavigationLink(value: NavigationDestination.throwing) {
-                        BlockView(title: "Throwing", color: .orange)
-                    }
+                        NavigationLink(value: NavigationDestination.workouts) {
+                            BlockView(title: "Workouts", color: .green)
+                        }
 
-                    NavigationLink(value: NavigationDestination.nutrition) {
-                        BlockView(title: "Nutrition", color: .purple)
-                    }
+                        NavigationLink(value: NavigationDestination.throwing) {
+                            BlockView(title: "Throwing", color: .orange)
+                        }
+                        .disabled(programId == nil) // Disable if programId is nil
 
-                    NavigationLink(value: NavigationDestination.recovery) {
-                        BlockView(title: "Recovery", color: .red)
+                        NavigationLink(value: NavigationDestination.nutrition) {
+                            BlockView(title: "Nutrition", color: .purple)
+                        }
+
+                        NavigationLink(value: NavigationDestination.recovery) {
+                            BlockView(title: "Recovery", color: .red)
+                        }
                     }
+                    .padding()
                 }
-                .padding()
-            }
-            .navigationDestination(for: NavigationDestination.self) { destination in
-                switch destination {
-                case .myProfile:
-                    MyProfileView(playerId: playerId) // Pass the hardcoded playerId here
-                case .workouts:
-                    WorkoutsView(playerId: playerId, playerName: playerName) // Pass the hardcoded playerId here
-                case .throwing:
-                    ThrowingView(playerId: playerId) // Pass playerId here
-                case .nutrition:
-                    NutritionView()
-                case .recovery:
-                    RecoveryView()
+                .navigationDestination(for: NavigationDestination.self) { destination in
+                    switch destination {
+                    case .myProfile:
+                        MyProfileView(playerId: playerId)
+                    case .workouts:
+                        WorkoutsView(playerId: playerId, playerName: playerName)
+                    case .throwing:
+                        if let programId = programId {
+                            ThrowingView(playerId: playerId, programId: programId)
+                        } else {
+                            Text("Program ID not available")
+                        }
+                    case .nutrition:
+                        NutritionView()
+                    case .recovery:
+                        RecoveryView()
+                    }
                 }
             }
         }
+        .onAppear {
+            fetchProgramData(playerId: playerId)
+        }
+    }
+
+    // Fetch program data for the hardcoded playerId
+    private func fetchProgramData(playerId: Int) {
+        guard let url = URL(string: "\(baseURL)/api/player-throwing-programs/?player_id=\(playerId)") else {
+            errorMessage = "Invalid API URL"
+            isLoading = false
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    errorMessage = "Failed to fetch program data: \(error.localizedDescription)"
+                    isLoading = false
+                    return
+                }
+
+                guard let data = data else {
+                    errorMessage = "No data received"
+                    isLoading = false
+                    return
+                }
+
+                do {
+                    // Decode the response to get the list of PlayerThrowingPrograms
+                    let programs = try JSONDecoder().decode([PlayerThrowingProgram].self, from: data)
+                    
+                    // Set the programId for the first program (or handle multiple programs if needed)
+                    if let program = programs.first {
+                        self.programId = program.id
+                    } else {
+                        errorMessage = "No programs found for playerId \(playerId)"
+                    }
+                } catch {
+                    errorMessage = "Failed to decode program data: \(error.localizedDescription)"
+                }
+                isLoading = false
+            }
+        }.resume()
     }
 }
 
