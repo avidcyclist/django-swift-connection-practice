@@ -22,12 +22,6 @@ struct ThrowingProgramView: View {
                             .bold()
                             .padding(.bottom, 10)
 
-                        Text("Start Date: \(program.startDate)")
-                            .font(.subheadline)
-                        Text("End Date: \(program.endDate)")
-                            .font(.subheadline)
-                            .padding(.bottom, 10)
-
                         // Weekly Program Section
                         Text("Weekly Program")
                             .font(.headline)

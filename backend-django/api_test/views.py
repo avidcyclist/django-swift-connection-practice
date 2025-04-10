@@ -1,14 +1,14 @@
 from django.shortcuts import render
-import json
+
 # Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
-from django.db import connection
-from datetime import datetime
+
+
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+
 
 from .models import (
     Player,
@@ -143,11 +143,6 @@ def get_players(request):
     players = Player.objects.all()
     serializer = PlayerSerializer(players, many=True)
     return Response(serializer.data)
-
-@api_view(['GET'])
-def get_player_id(request):
-    # Temporarily return a hard-coded playerId for testing
-    return Response({"playerId": 1}, status=200)
 
 
 @api_view(['GET'])
@@ -347,12 +342,6 @@ class ThrowingProgramDetailView(generics.RetrieveAPIView):
     queryset = ThrowingProgram.objects.all()
     serializer_class = ThrowingProgramSerializer
     
-# List all player-specific programs
-class PlayerThrowingProgramListView(generics.ListAPIView):
-    queryset = PlayerThrowingProgram.objects.all()
-    serializer_class = PlayerThrowingProgramSerializer
-
-
 # Retrieve a specific player-specific program
 class PlayerThrowingProgramListView(generics.ListAPIView):
     serializer_class = PlayerThrowingProgramSerializer
