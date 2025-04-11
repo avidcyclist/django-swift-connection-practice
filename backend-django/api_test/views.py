@@ -43,6 +43,8 @@ from .serializers import (
     ThrowingProgramSerializer,
     PlayerThrowingProgramSerializer,
     ThrowingRoutineSerializer,
+    ThrowingActiveWarmupSerializer,
+    PlayerThrowingProgramDaySerializer,
 )
 
 class PlayerInfoView(APIView):
@@ -415,3 +417,32 @@ class ThrowingRoutineDetailView(generics.RetrieveAPIView):
 class PlayerThrowingProgramDetailView(generics.RetrieveAPIView):
     queryset = PlayerThrowingProgram.objects.all()
     serializer_class = PlayerThrowingProgramSerializer
+    
+@api_view(['GET'])
+def get_player_throwing_active_warmups(request, player_id):
+    try:
+        player = Player.objects.get(id=player_id)
+        warmups = player.throwing_active_warmups.all()
+        serializer = ThrowingActiveWarmupSerializer(warmups, many=True)
+        return Response(serializer.data)
+    except Player.DoesNotExist:
+        return Response({"error": "Player not found."}, status=404)
+    
+    
+@api_view(['GET'])
+def get_player_throwing_program_weeks(request, program_id):
+    try:
+        # Get all days for the player's throwing program
+        days = PlayerThrowingProgramDay.objects.filter(player_program_id=program_id).order_by('week_number', 'day_number')
+        
+        # Group days by week
+        weeks = {}
+        for day in days:
+            week = day.week_number
+            if week not in weeks:
+                weeks[week] = []
+            weeks[week].append(PlayerThrowingProgramDaySerializer(day).data)
+        
+        return Response(weeks)
+    except PlayerThrowingProgramDay.DoesNotExist:
+        return Response({"error": "Program not found."}, status=404)

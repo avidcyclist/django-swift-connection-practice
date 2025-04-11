@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.forms import Textarea
 from django.db import models
+from .utils import clone_arm_care_routine_for_player
+from django.shortcuts import get_object_or_404
 
 from .models import (
     Player,
@@ -20,6 +22,11 @@ from .models import (
     ThrowingProgramDay,
     PlayerThrowingProgram,
     PlayerThrowingProgramDay,
+    ThrowingActiveWarmup,
+    ArmCareRoutine,
+    PlayerArmCareExercise,
+    PlayerArmCareRoutine,
+    ArmCareExercise,
 )
 
 @admin.register(ActiveWarmup)
@@ -41,8 +48,9 @@ class PowerCNSWarmupAdmin(admin.ModelAdmin):
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "age", "team")
-    filter_horizontal = ("correctives", "active_warmup", "power_cns_warmups")
+    list_display = ("first_name", "last_name", "email", "age", "team")  # Updated fields
+    filter_horizontal = ("correctives", "active_warmup", "power_cns_warmups", "throwing_active_warmups", "arm_care_routines")  # Include throwing_active_warmups
+    search_fields = ("first_name", "last_name", "email", "team")  # Add search functionality
 
 @admin.register(Workout)
 class WorkoutAdmin(admin.ModelAdmin):
@@ -172,6 +180,7 @@ class PlayerThrowingProgramAdmin(admin.ModelAdmin):
                 for base_day in base_days:
                     PlayerThrowingProgramDay.objects.create(
                         player_program=obj,
+                        week_number=base_day.week_number,
                         day_number=base_day.day_number,
                         name=base_day.name,
                         warmup=base_day.warmup,
@@ -193,6 +202,7 @@ class PlayerThrowingProgramAdmin(admin.ModelAdmin):
             for base_day in base_days:
                 PlayerThrowingProgramDay.objects.create(
                     player_program=obj,
+                    week_number=base_day.week_number,
                     day_number=base_day.day_number,
                     name=base_day.name,
                     warmup=base_day.warmup,
@@ -205,3 +215,65 @@ class PlayerThrowingProgramAdmin(admin.ModelAdmin):
                 )
 
 admin.site.unregister(PlayerThrowingProgramDay)
+
+@admin.register(ThrowingActiveWarmup)
+class ThrowingActiveWarmupAdmin(admin.ModelAdmin):
+    list_display = ("name", "youtube_link", "sets_reps")  # Include sets_reps in the list view
+    search_fields = ("name", "sets_reps")  # Allow searching by name and sets_reps
+    
+    
+class ArmCareExerciseInline(admin.TabularInline):
+    model = ArmCareExercise
+    extra = 1
+
+
+class PlayerArmCareExerciseInline(admin.TabularInline):
+    model = PlayerArmCareExercise
+    extra = 1
+
+@admin.register(PlayerArmCareRoutine)
+class PlayerArmCareRoutineAdmin(admin.ModelAdmin):
+    list_display = ("player", "name", "description")
+    inlines = [PlayerArmCareExerciseInline]
+    
+
+from django import forms
+from .models import Player
+
+class CustomizeForPlayerForm(forms.Form):
+    player = forms.ModelChoiceField(queryset=Player.objects.all(), label="Select Player")
+    
+@admin.action(description="Customize for Player")
+def customize_for_player(modeladmin, request, queryset):
+    """
+    Admin action to clone an ArmCareRoutine for a specific player.
+    """
+    if "apply" in request.POST:
+        # Handle form submission
+        form = CustomizeForPlayerForm(request.POST)
+        if form.is_valid():
+            player = form.cleaned_data["player"]
+            for routine in queryset:
+                clone_arm_care_routine_for_player(player, routine)
+            modeladmin.message_user(request, "Selected routines have been customized for the player.")
+            return
+
+    else:
+        # Display the form
+        form = CustomizeForPlayerForm()
+
+    # Render the form in the admin panel
+    return admin.helpers.ActionFormResponse(
+        request,
+        form=form,
+        title="Customize Arm Care Routine for Player",
+        action="customize_for_player",
+        queryset=queryset,
+    )
+
+@admin.register(ArmCareRoutine)
+class ArmCareRoutineAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    inlines = [ArmCareExerciseInline]
+    actions = [customize_for_player]
+    

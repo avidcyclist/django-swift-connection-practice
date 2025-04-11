@@ -17,9 +17,13 @@ from .models import (
     PlayerThrowingProgram,
     PlayerThrowingProgramDay,
     Drill,
+    ThrowingActiveWarmup,
 )
 
-
+class ThrowingActiveWarmupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ThrowingActiveWarmup
+        fields = ['id', 'name', 'youtube_link', 'sets_reps']
 
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,7 +69,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ["id", "name", "age", "team"]  # Include active warmup and power CNS warmups
+        fields = ["id", "first_name", "last_name", "age", "team"]  # Include active warmup and power CNS warmups
         
 class PhaseWorkoutsResponseSerializer(serializers.Serializer):
     phase_name = serializers.CharField()
@@ -129,6 +133,7 @@ class ThrowingProgramDaySerializer(serializers.ModelSerializer):
         model = ThrowingProgramDay
         fields = [
             "id",
+            "week_number",
             "day_number",
             "name",
             "warmup",
@@ -153,6 +158,7 @@ class PlayerThrowingProgramDaySerializer(serializers.ModelSerializer):
         model = PlayerThrowingProgramDay
         fields = [
             "id",
+            "week_number",
             "day_number",
             "name",
             "warmup",
@@ -170,3 +176,5 @@ class PlayerThrowingProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerThrowingProgram
         fields = ["id", "player", "program", "start_date", "end_date", "days"]
+        
+        

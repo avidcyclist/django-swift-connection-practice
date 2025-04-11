@@ -33,25 +33,6 @@ struct ThrowingView: View {
     }
 }
 
-struct ThrowingProgramView: View {
-    let playerId: Int
-
-    var body: some View {
-        Text("My Program Page for Player \(playerId)")
-            .font(.largeTitle)
-            .padding()
-    }
-}
-
-struct PlyoThrowingRoutinesView: View {
-    let playerId: Int
-
-    var body: some View {
-        Text("Plyo / Throwing Routines Page for Player \(playerId)")
-            .font(.largeTitle)
-            .padding()
-    }
-}
 
 struct ArmCareView: View {
     let playerId: Int
@@ -63,12 +44,3 @@ struct ArmCareView: View {
     }
 }
 
-struct ThrowingActiveWarmupView: View {
-    let playerId: Int
-
-    var body: some View {
-        Text("Active Warmup for Player \(playerId)")
-            .font(.largeTitle)
-            .padding()
-    }
-}

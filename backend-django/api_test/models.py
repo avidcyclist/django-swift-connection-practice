@@ -15,7 +15,7 @@ class Phase(models.Model):
 
     def __str__(self):
         return self.name
-
+    
     
 class PhaseWorkout(models.Model):
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE, related_name="phase_workouts")  # Link to the phase
@@ -56,6 +56,13 @@ class PowerCNSWarmup(models.Model):
     def __str__(self):
         return f"{self.name} (Day {self.day})"
 
+class ArmCareRoutine(models.Model):
+    name = models.CharField(max_length=255)  # e.g., "Day 1 Arm Care Routine"
+    description = models.TextField(blank=True, null=True)  # Optional description
+
+    def __str__(self):
+        return self.name
+
 
 class PowerCNSExercise(models.Model):
     warmup = models.ForeignKey(PowerCNSWarmup, on_delete=models.CASCADE, related_name="exercises")  # Link to the warmup
@@ -65,20 +72,32 @@ class PowerCNSExercise(models.Model):
     def __str__(self):
         return f"{self.name} ({self.warmup.name})"
     
+class ThrowingActiveWarmup(models.Model):
+    name = models.CharField(max_length=100)  # Name of the throwing-specific warmup drill
+    youtube_link = models.URLField(max_length=200, null=True, blank=True)  # Optional: YouTube link for explanation
+    sets_reps = models.CharField(max_length=50, null=True, blank=True)  # New field for sets and reps (e.g., "1x20", "15 sec each")
     
+    def __str__(self):
+        return self.name
+
+
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)  # First name of the player
+    last_name = models.CharField(max_length=100)   # Last name of the player
+    email = models.EmailField(unique=True, default="default@example.com")         # Email address (used for login)
     age = models.IntegerField()
     team = models.CharField(max_length=100)
     correctives = models.ManyToManyField(Corrective, blank=True, related_name="players")  # Many-to-Many relationship
     active_warmup = models.ManyToManyField(ActiveWarmup, blank=True, related_name="players")  # Many-to-Many relationship
     power_cns_warmups = models.ManyToManyField(PowerCNSWarmup, blank=True, related_name="players")  # Many-to-Many relationship
-
-
+    throwing_active_warmups = models.ManyToManyField(ThrowingActiveWarmup, blank=True, related_name="players")
+    arm_care_routines = models.ManyToManyField(ArmCareRoutine, blank=True, related_name="players")  # New field
+   
     def __str__(self):
-        return self.name
-
+        return f"{self.first_name} {self.last_name}"  # Display full name in the admin panel
+    
+    
 class PlayerPhase(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)  # Link to a player
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE)    # Link to a phase
@@ -181,8 +200,9 @@ class ThrowingProgram(models.Model):
     
 class ThrowingProgramDay(models.Model):
     program = models.ForeignKey(ThrowingProgram, on_delete=models.CASCADE, related_name="days")
+    week_number = models.IntegerField()  # e.g., "Week 1"
     day_number = models.IntegerField()  # e.g., "Day 1"
-    name = models.CharField(max_length=255)  # e.g., "GAME DAY"
+    name = models.CharField(max_length=255, blank=True, null=True)  # e.g., "GAME DAY"
     warmup = models.TextField(blank=True, null=True)  # e.g., "WU, ACT"
     plyos = models.TextField(blank=True, null=True) # Reference routines
     throwing = models.TextField(blank=True, null=True)  # e.g., "Long Toss to Preferred Distance"
@@ -201,12 +221,13 @@ class PlayerThrowingProgram(models.Model):
     end_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.player.name} - {self.program.name}"
+        return f"{self.player.first_name} {self.player.last_name} - {self.program.name}"
     
 class PlayerThrowingProgramDay(models.Model):
     player_program = models.ForeignKey(PlayerThrowingProgram, on_delete=models.CASCADE, related_name="days")
+    week_number = models.IntegerField()  # e.g., "Week 1"
     day_number = models.IntegerField()  # e.g., "Day 1"
-    name = models.CharField(max_length=255)  # e.g., "GAME DAY"
+    name = models.CharField(max_length=255, blank=True, null=True)  # e.g., "GAME DAY"
     warmup = models.TextField(blank=True, null=True)  # e.g., "WU, ACT"
     plyos = models.TextField(blank=True, null=True) #
     throwing = models.TextField(blank=True, null=True)  # e.g., "Long Toss to Preferred Distance"
@@ -216,4 +237,37 @@ class PlayerThrowingProgramDay(models.Model):
     conditioning = models.TextField(blank=True, null=True)  # e.g., "15min bike"
 
     def __str__(self):
-        return f"{self.player_program.player.name} - Day {self.day_number}: {self.name}"
+        return f"{self.player_program.player.first_name} {self.player_program.player.last_name}- Day {self.day_number}: {self.name}"
+
+
+    
+class ArmCareExercise(models.Model):
+    routine = models.ForeignKey(ArmCareRoutine, on_delete=models.CASCADE, related_name="exercises")
+    focus = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Shoulder/Cuff Strength"
+    exercise = models.CharField(max_length=255)  # e.g., "Crossover Symmetry"
+    sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "1x10"
+    youtube_link = models.URLField(blank=True, null=True)  # Optional instructional video link
+
+    def __str__(self):
+        return f"{self.routine.name} - {self.exercise}"
+    
+    
+class PlayerArmCareRoutine(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="custom_arm_care_routines")
+    name = models.CharField(max_length=255)  # e.g., "Day 1 Arm Care Routine (Customized)"
+    description = models.TextField(blank=True, null=True)  # Optional description
+
+    def __str__(self):
+        return f"{self.player.first_name} {self.player.last_name} - {self.name}"
+    
+class PlayerArmCareExercise(models.Model):
+    routine = models.ForeignKey(PlayerArmCareRoutine, on_delete=models.CASCADE, related_name="exercises")
+    focus = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Shoulder/Cuff Strength"
+    exercise = models.CharField(max_length=255)  # e.g., "Crossover Symmetry"
+    sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "1x10"
+    youtube_link = models.URLField(blank=True, null=True)  # Optional instructional video link
+
+    def __str__(self):
+        return f"{self.routine.name} - {self.exercise}"
+    
+    

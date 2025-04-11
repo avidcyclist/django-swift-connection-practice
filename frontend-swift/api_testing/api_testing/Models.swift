@@ -102,6 +102,16 @@ struct ActiveWarmup: Identifiable, Codable {
     let youtube_link: String?
 }
 
+// Throwing Active Warmup Model
+struct ThrowingActiveWarmup: Identifiable, Codable {
+    let id: Int
+    let name: String
+    let youtube_link: String?
+    let sets_reps: String?
+}
+
+
+
 // Power CNS Exercise Model
 struct PowerCNSExercise: Identifiable, Codable {
     let id: Int
@@ -138,7 +148,6 @@ struct RoutineDetail: Decodable {
     let drills: [Drill]
 }
 
-// Model for a drill
 // Model for a drill
 struct Drill: Identifiable, Decodable {
     let id: Int
@@ -178,6 +187,7 @@ struct PlayerThrowingProgram: Decodable {
 
 struct PlayerThrowingProgramDay: Decodable, Identifiable {
     let id: Int
+    let weekNumber: Int
     let dayNumber: Int
     let name: String?
     let warmup: String?
@@ -190,6 +200,7 @@ struct PlayerThrowingProgramDay: Decodable, Identifiable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case weekNumber = "week_number"
         case dayNumber = "day_number"
         case name, warmup, plyos, throwing
         case veloCommand = "velo_command"
