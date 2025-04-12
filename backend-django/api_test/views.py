@@ -1,4 +1,3 @@
-from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.decorators import api_view
@@ -14,37 +13,37 @@ from .models import (
     Player,
     Workout,
     PlayerPhase,
-    Phase,
     WorkoutLog,
     PhaseWorkout,
     PlayerPhaseWorkout,
-    PowerCNSExercise,
     PowerCNSWarmup,
-    Corrective,
-    ActiveWarmup,
     PlayerThrowingProgram,
     ThrowingProgram,
     Player,
     PlayerThrowingProgramDay,
     ThrowingRoutine,
+    ArmCareRoutine,
+    PlayerArmCareRoutine,
+    PlayerArmCareExercise,
 )
 
 from .serializers import (
     PlayerSerializer,
     WorkoutSerializer,
-    PlayerPhaseSerializer,
     WorkoutLogSerializer,
     CorrectiveSerializer,
     PlayerPhaseWorkoutSerializer,
     PhaseWorkoutSerializer,
-    PhaseWorkoutsResponseSerializer,
     ActiveWarmupSerializer,
-    PowerCNSWarmupSerializer,
     ThrowingProgramSerializer,
     PlayerThrowingProgramSerializer,
     ThrowingRoutineSerializer,
     ThrowingActiveWarmupSerializer,
     PlayerThrowingProgramDaySerializer,
+    ArmCareRoutineSerializer,
+    PlayerArmCareRoutineSerializer,
+    PlayerArmCareExerciseSerializer,
+    ArmCareExerciseSerializer,
 )
 
 class PlayerInfoView(APIView):
@@ -446,3 +445,141 @@ def get_player_throwing_program_weeks(request, program_id):
         return Response(weeks)
     except PlayerThrowingProgramDay.DoesNotExist:
         return Response({"error": "Program not found."}, status=404)
+    
+# List all ArmCareRoutines
+class ArmCareRoutineListView(generics.ListAPIView):
+    queryset = ArmCareRoutine.objects.all()
+    serializer_class = ArmCareRoutineSerializer
+
+
+# Retrieve a specific ArmCareRoutine
+class ArmCareRoutineDetailView(generics.RetrieveAPIView):
+    queryset = ArmCareRoutine.objects.all()
+    serializer_class = ArmCareRoutineSerializer
+    
+# List all PlayerArmCareRoutines for a specific player
+class PlayerArmCareRoutineListView(APIView):
+    def get(self, request, player_id):
+        try:
+            # Get the player
+            player = Player.objects.get(id=player_id)
+
+            # Check if the player has any customized routines
+            player_routines = PlayerArmCareRoutine.objects.filter(player=player)
+
+            if player_routines.exists():
+                # Return the customized routines
+                serializer = PlayerArmCareRoutineSerializer(player_routines, many=True)
+                return Response(serializer.data, status=200)
+            else:
+                # Return the default routines
+                default_routines = ArmCareRoutine.objects.all()
+                serializer = ArmCareRoutineSerializer(default_routines, many=True)
+                return Response(serializer.data, status=200)
+
+        except Player.DoesNotExist:
+            return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)
+
+# Retrieve a specific PlayerArmCareRoutine
+class PlayerArmCareRoutineDetailView(generics.RetrieveAPIView):
+    queryset = PlayerArmCareRoutine.objects.all()
+    serializer_class = PlayerArmCareRoutineSerializer
+
+class ArmCareRoutineGroupedByDayView(APIView):
+    def get(self, request, routine_id):
+        try:
+            routine = ArmCareRoutine.objects.get(id=routine_id)
+            exercises = routine.exercises.all().order_by("day")
+            grouped_exercises = {}
+            for exercise in exercises:
+                day = exercise.day
+                if day not in grouped_exercises:
+                    grouped_exercises[day] = []
+                grouped_exercises[day].append(ArmCareExerciseSerializer(exercise).data)
+
+            response_data = {
+                "id": routine.id,
+                "name": routine.name,
+                "description": routine.description,
+                "days": grouped_exercises,
+            }
+            return Response(response_data, status=200)
+        except ArmCareRoutine.DoesNotExist:
+            return Response({"error": "Routine not found."}, status=404)
+
+
+class PlayerArmCareRoutineGroupedByDayView(APIView):
+    def get(self, request, routine_id):
+        try:
+            # Fetch the PlayerArmCareRoutine
+            routine = PlayerArmCareRoutine.objects.get(id=routine_id)
+
+            # Fetch and group exercises by day
+            exercises = routine.exercises.all().order_by("day")
+            grouped_exercises = {}
+            for exercise in exercises:
+                day = exercise.day
+                if day not in grouped_exercises:
+                    grouped_exercises[day] = []
+                grouped_exercises[day].append(PlayerArmCareExerciseSerializer(exercise).data)
+
+            # Prepare the response
+            response_data = {
+                "id": routine.id,
+                "player": routine.player.id,
+                "player_name": f"{routine.player.first_name} {routine.player.last_name}",
+                "routine_name": routine.routine.name,  # Fetch the name from the related ArmCareRoutine
+                "description": routine.description,
+                "start_date": routine.start_date,
+                "end_date": routine.end_date,
+                "days": grouped_exercises,
+            }
+            return Response(response_data, status=200)
+
+        except PlayerArmCareRoutine.DoesNotExist:
+            return Response({"error": "Routine not found."}, status=404)
+        
+class EditPlayerArmCareRoutineView(APIView):
+    def post(self, request):
+        player_id = request.data.get("player_id")
+        routine_id = request.data.get("routine_id")
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
+        exercises = request.data.get("exercises")  # List of edited exercises
+
+        try:
+            # Get the player and routine
+            player = Player.objects.get(id=player_id)
+            routine = ArmCareRoutine.objects.get(id=routine_id)
+
+            # Check if a PlayerArmCareRoutine already exists
+            player_routine, created = PlayerArmCareRoutine.objects.get_or_create(
+                player=player,
+                routine=routine,
+                defaults={"start_date": start_date, "end_date": end_date},
+            )
+
+            if not created:
+                # Update the start and end dates if the routine already exists
+                player_routine.start_date = start_date
+                player_routine.end_date = end_date
+                player_routine.save()
+
+            # Clear existing exercises and add the edited ones
+            PlayerArmCareExercise.objects.filter(routine=player_routine).delete()
+            for exercise in exercises:
+                PlayerArmCareExercise.objects.create(
+                    routine=player_routine,
+                    day=exercise["day"],
+                    focus=exercise["focus"],
+                    exercise=exercise["exercise"],
+                    sets_reps=exercise["sets_reps"],
+                    youtube_link=exercise["youtube_link"],
+                )
+
+            return Response({"message": "Routine updated successfully!"}, status=200)
+
+        except Player.DoesNotExist:
+            return Response({"error": "Player not found."}, status=404)
+        except ArmCareRoutine.DoesNotExist:
+            return Response({"error": "Arm care routine not found."}, status=404)

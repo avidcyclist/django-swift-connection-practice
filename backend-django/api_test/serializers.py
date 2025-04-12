@@ -18,6 +18,10 @@ from .models import (
     PlayerThrowingProgramDay,
     Drill,
     ThrowingActiveWarmup,
+    ArmCareRoutine,
+    ArmCareExercise,
+    PlayerArmCareRoutine,
+    PlayerArmCareExercise,
 )
 
 class ThrowingActiveWarmupSerializer(serializers.ModelSerializer):
@@ -178,3 +182,30 @@ class PlayerThrowingProgramSerializer(serializers.ModelSerializer):
         fields = ["id", "player", "program", "start_date", "end_date", "days"]
         
         
+class ArmCareExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArmCareExercise
+        fields = ["id", "day", "focus", "exercise", "sets_reps", "youtube_link"]
+
+
+class ArmCareRoutineSerializer(serializers.ModelSerializer):
+    exercises = ArmCareExerciseSerializer(many=True, read_only=True)  # Include associated exercises
+
+    class Meta:
+        model = ArmCareRoutine
+        fields = ["id", "name", "description", "exercises"]
+        
+class PlayerArmCareExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerArmCareExercise
+        fields = ["id", "day", "focus", "exercise", "sets_reps", "youtube_link"]
+
+
+class PlayerArmCareRoutineSerializer(serializers.ModelSerializer):
+    exercises = PlayerArmCareExerciseSerializer(many=True, read_only=True)  # Include associated exercises
+    player_name = serializers.CharField(source="player.__str__", read_only=True)  # Include player's name
+    routine_name = serializers.CharField(source="routine.name", read_only=True)  # Include the name of the related ArmCareRoutine
+
+    class Meta:
+        model = PlayerArmCareRoutine
+        fields = ["id", "player", "player_name", "routine_name", "description", "start_date", "end_date", "exercises"]

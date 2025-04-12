@@ -229,12 +229,14 @@ class ArmCareExerciseInline(admin.TabularInline):
 
 class PlayerArmCareExerciseInline(admin.TabularInline):
     model = PlayerArmCareExercise
-    extra = 1
+    extra = 0  # No extra blank rows by default
 
 @admin.register(PlayerArmCareRoutine)
 class PlayerArmCareRoutineAdmin(admin.ModelAdmin):
-    list_display = ("player", "name", "description")
-    inlines = [PlayerArmCareExerciseInline]
+    list_display = ("player", "routine", "start_date", "end_date")  # Fields to display in the list view
+    search_fields = ("player__first_name", "player__last_name", "routine__name")  # Add search functionality
+    list_filter = ("player", "routine")  # Add filtering by player and routine
+    inlines = [PlayerArmCareExerciseInline]  # Inline editing for exercises
     
 
 from django import forms

@@ -20,6 +20,12 @@ from .views import (
     ThrowingRoutineDetailView,
     get_player_throwing_active_warmups,
     get_player_throwing_program_weeks,
+    ArmCareRoutineListView,
+    ArmCareRoutineDetailView,
+    PlayerArmCareRoutineListView,
+    PlayerArmCareRoutineDetailView,
+    ArmCareRoutineGroupedByDayView,
+    PlayerArmCareRoutineGroupedByDayView,
 )
 
 urlpatterns = [
@@ -45,5 +51,14 @@ urlpatterns = [
     path("api/throwing-routines/<int:pk>/", ThrowingRoutineDetailView.as_view(), name="throwing-routine-detail"),
     path('api/player/throwing-active-warmups/<int:player_id>/', get_player_throwing_active_warmups, name='get-player-throwing-active-warmups'),
     path('api/player-throwing-programs/weeks/<int:program_id>/', get_player_throwing_program_weeks, name='get-player-throwing-program-weeks'),
+     # ArmCareRoutine URLs
+    path("api/arm-care-routines/", ArmCareRoutineListView.as_view(), name="arm-care-routine-list"),
+    path("api/arm-care-routines/<int:pk>/", ArmCareRoutineDetailView.as_view(), name="arm-care-routine-detail"),
 
+    # PlayerArmCareRoutine URLs
+    path("api/players/arm-care-routines/<int:player_id>/", PlayerArmCareRoutineListView.as_view(), name="player-arm-care-routine-list"),
+    path("api/player-arm-care-routines/<int:pk>/", PlayerArmCareRoutineDetailView.as_view(), name="player-arm-care-routine-detail"),
+# New grouped-by-day views
+    path("api/arm-care-routines/grouped-by-day/<int:routine_id>/", ArmCareRoutineGroupedByDayView.as_view(), name="arm-care-routine-grouped-by-day"),
+    path("api/player-arm-care-routines/grouped-by-day/<int:routine_id>/", PlayerArmCareRoutineGroupedByDayView.as_view(), name="player-arm-care-routine-grouped-by-day"),
 ]

@@ -105,7 +105,7 @@ class PlayerPhase(models.Model):
     end_date = models.DateField()
 
     def __str__(self):
-        return f"{self.player.name} - {self.phase.name}"
+        return f"{self.player.first_name} - {self.phase.name}"
 
     def save(self, *args, **kwargs):
         # Check if this is an update and the phase has changed
@@ -166,7 +166,7 @@ class PlayerPhaseWorkout(models.Model):
     player_rpe = models.JSONField(default=list, blank=True)  # Player-entered RPE values (mutable)
 
     def __str__(self):
-        return f"{self.player_phase.player.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
+        return f"{self.player_phase.player.first_name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
     
     
     
@@ -243,6 +243,7 @@ class PlayerThrowingProgramDay(models.Model):
     
 class ArmCareExercise(models.Model):
     routine = models.ForeignKey(ArmCareRoutine, on_delete=models.CASCADE, related_name="exercises")
+    day = models.IntegerField()  # e.g., "1" for Day 1
     focus = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Shoulder/Cuff Strength"
     exercise = models.CharField(max_length=255)  # e.g., "Crossover Symmetry"
     sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "1x10"
@@ -253,21 +254,49 @@ class ArmCareExercise(models.Model):
     
     
 class PlayerArmCareRoutine(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="custom_arm_care_routines")
-    name = models.CharField(max_length=255)  # e.g., "Day 1 Arm Care Routine (Customized)"
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="player_arm_care_routines")
+    routine = models.ForeignKey(ArmCareRoutine, on_delete=models.CASCADE)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)  # Optional description
 
     def __str__(self):
-        return f"{self.player.first_name} {self.player.last_name} - {self.name}"
+        return f"{self.player.first_name} {self.player.last_name} - {self.routine.name}"
+
+    def save(self, *args, **kwargs):
+        # Check if this is a new instance or if the routine has changed
+        is_new = self.pk is None
+        old_routine = None
+        if not is_new:
+            old_routine = PlayerArmCareRoutine.objects.get(pk=self.pk).routine
+
+        super().save(*args, **kwargs)  # Save the routine first
+
+        # If the routine is new or has changed, update the exercises
+        if is_new or old_routine != self.routine:
+            # Delete existing exercises for this routine
+            PlayerArmCareExercise.objects.filter(routine=self).delete()
+
+            # Copy exercises from the base routine
+            for exercise in self.routine.exercises.all():
+                PlayerArmCareExercise.objects.create(
+                    routine=self,
+                    day=exercise.day,
+                    focus=exercise.focus,
+                    exercise=exercise.exercise,
+                    sets_reps=exercise.sets_reps,
+                    youtube_link=exercise.youtube_link,
+                )
     
 class PlayerArmCareExercise(models.Model):
     routine = models.ForeignKey(PlayerArmCareRoutine, on_delete=models.CASCADE, related_name="exercises")
+    day = models.IntegerField()  # e.g., "1" for Day 1    
     focus = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Shoulder/Cuff Strength"
     exercise = models.CharField(max_length=255)  # e.g., "Crossover Symmetry"
     sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "1x10"
     youtube_link = models.URLField(blank=True, null=True)  # Optional instructional video link
 
     def __str__(self):
-        return f"{self.routine.name} - {self.exercise}"
+        return f"{self.routine.routine.name} - {self.exercise}"
     
     
