@@ -16,6 +16,9 @@ class Phase(models.Model):
     def __str__(self):
         return self.name
     
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    password_changed = models.BooleanField(default=False)  # Track if the password has been changed  
     
 class PhaseWorkout(models.Model):
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE, related_name="phase_workouts")  # Link to the phase

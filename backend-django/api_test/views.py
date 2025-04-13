@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
+from rest_framework.permissions import IsAuthenticated
 
 
 from django.shortcuts import get_object_or_404
@@ -44,6 +45,7 @@ from .serializers import (
     PlayerArmCareRoutineSerializer,
     PlayerArmCareExerciseSerializer,
     ArmCareExerciseSerializer,
+    PasswordChangeSerializer,
 )
 
 class PlayerInfoView(APIView):
@@ -583,3 +585,13 @@ class EditPlayerArmCareRoutineView(APIView):
             return Response({"error": "Player not found."}, status=404)
         except ArmCareRoutine.DoesNotExist:
             return Response({"error": "Arm care routine not found."}, status=404)
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password changed successfully."})
+        return Response(serializer.errors, status=400)

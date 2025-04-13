@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from .views import (
     PlayerInfoView,
     WorkoutView,
@@ -26,6 +27,7 @@ from .views import (
     PlayerArmCareRoutineDetailView,
     ArmCareRoutineGroupedByDayView,
     PlayerArmCareRoutineGroupedByDayView,
+    PasswordChangeView,
 )
 
 urlpatterns = [
@@ -58,7 +60,13 @@ urlpatterns = [
     # PlayerArmCareRoutine URLs
     path("api/players/arm-care-routines/<int:player_id>/", PlayerArmCareRoutineListView.as_view(), name="player-arm-care-routine-list"),
     path("api/player-arm-care-routines/<int:pk>/", PlayerArmCareRoutineDetailView.as_view(), name="player-arm-care-routine-detail"),
-# New grouped-by-day views
+    # New grouped-by-day views
     path("api/arm-care-routines/grouped-by-day/<int:routine_id>/", ArmCareRoutineGroupedByDayView.as_view(), name="arm-care-routine-grouped-by-day"),
     path("api/player-arm-care-routines/grouped-by-day/<int:routine_id>/", PlayerArmCareRoutineGroupedByDayView.as_view(), name="player-arm-care-routine-grouped-by-day"),
+    #password views
+    path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('api/password-change/', PasswordChangeView.as_view(), name='password-change'),
 ]
