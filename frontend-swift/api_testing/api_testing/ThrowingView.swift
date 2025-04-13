@@ -24,23 +24,12 @@ struct ThrowingView: View {
                     BlockView(title: "Plyo / Throwing Routines", color: .orange)
                 }
 
-                NavigationLink(destination: ArmCareView(playerId: playerId)) {
+                NavigationLink(destination: ArmCareRoutineView(playerId: playerId)) {
                     BlockView(title: "Arm Care", color: .red)
                 }
             }
             .padding()
         }
-    }
-}
-
-
-struct ArmCareView: View {
-    let playerId: Int
-
-    var body: some View {
-        Text("Arm Care Page for Player \(playerId)")
-            .font(.largeTitle)
-            .padding()
     }
 }
 

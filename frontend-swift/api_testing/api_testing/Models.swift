@@ -215,3 +215,44 @@ struct Player: Codable {
     let age: Int
     let team: String
 }
+
+struct ArmCareRoutineResponse: Codable {
+    let id: Int
+    let player: Int
+    let playerName: String
+    let routineName: String
+    let description: String?
+    let startDate: String?
+    let endDate: String?
+    let days: [String: [ArmCareExercise]] // Grouped by day
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case player
+        case playerName = "player_name" // Map "player_name" to "playerName"
+        case routineName = "routine_name" // Map "routine_name" to "routineName"
+        case description
+        case startDate = "start_date" // Map "start_date" to "startDate"
+        case endDate = "end_date" // Map "end_date" to "endDate"
+        case days
+    }
+}
+
+
+struct ArmCareExercise: Codable, Identifiable {
+    let id: Int
+    let day: Int
+    let focus: String?
+    let exercise: String
+    let setsReps: String?
+    let youtubeLink: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case day
+        case focus
+        case exercise
+        case setsReps = "sets_reps"
+        case youtubeLink = "youtube_link"
+    }
+}
