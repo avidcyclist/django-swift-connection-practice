@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 
 from django.shortcuts import get_object_or_404
 
@@ -46,6 +47,7 @@ from .serializers import (
     PlayerArmCareExerciseSerializer,
     ArmCareExerciseSerializer,
     PasswordChangeSerializer,
+    CustomLoginSerializer,
 )
 
 class PlayerInfoView(APIView):
@@ -595,3 +597,16 @@ class PasswordChangeView(APIView):
             serializer.save()
             return Response({"message": "Password changed successfully."})
         return Response(serializer.errors, status=400)
+    
+
+class CustomLoginView(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        token = Token.objects.get(key=response.data['token'])
+        user = token.user
+        player = Player.objects.get(user=user)  # Fetch the Player instance
+        serializer = CustomLoginSerializer(player)
+        return Response({
+            'token': token.key,
+            'user': serializer.data
+        })

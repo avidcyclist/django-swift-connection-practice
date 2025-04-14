@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
+
 from .models import (
     Player,
     Workout,
@@ -225,3 +227,10 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
+        
+class CustomLoginSerializer(serializers.ModelSerializer):
+    playerId = serializers.IntegerField(source='id', read_only=True)  # Assuming player_id is in a related profile model
+
+    class Meta:
+        model = User
+        fields = ['playerId', 'first_name', 'last_name', 'email']

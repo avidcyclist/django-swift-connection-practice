@@ -86,11 +86,11 @@ class ThrowingActiveWarmup(models.Model):
 
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
-    first_name = models.CharField(max_length=100)  # First name of the player
-    last_name = models.CharField(max_length=100)   # Last name of the player
-    email = models.EmailField(unique=True, default="default@example.com")         # Email address (used for login)
-    age = models.IntegerField()
-    team = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, blank=True)  # Allow blank values
+    last_name = models.CharField(max_length=100, blank=True)   # Allow blank values
+    email = models.EmailField(unique=True, default="default@example.com")
+    age = models.IntegerField(null=True, blank=True)  # Allow NULL values
+    team = models.CharField(max_length=100, blank=True, default="")  # Default to an empty string
     correctives = models.ManyToManyField(Corrective, blank=True, related_name="players")  # Many-to-Many relationship
     active_warmup = models.ManyToManyField(ActiveWarmup, blank=True, related_name="players")  # Many-to-Many relationship
     power_cns_warmups = models.ManyToManyField(PowerCNSWarmup, blank=True, related_name="players")  # Many-to-Many relationship

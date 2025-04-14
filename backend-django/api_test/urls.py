@@ -1,5 +1,9 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from rest_framework.authtoken.views import obtain_auth_token
+
+
+
 from .views import (
     PlayerInfoView,
     WorkoutView,
@@ -28,6 +32,7 @@ from .views import (
     ArmCareRoutineGroupedByDayView,
     PlayerArmCareRoutineGroupedByDayView,
     PasswordChangeView,
+    CustomLoginView,
 )
 
 urlpatterns = [
@@ -69,4 +74,7 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('api/password-change/', PasswordChangeView.as_view(), name='password-change'),
+    #login views
+    path('api/login/', CustomLoginView.as_view(), name='api_login'),
+
 ]

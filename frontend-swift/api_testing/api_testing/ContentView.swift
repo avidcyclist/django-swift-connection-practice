@@ -9,75 +9,81 @@ enum NavigationDestination: String, Hashable {
 }
 
 struct ContentView: View {
-    @State private var playerId: Int = 1 // Hardcoded playerId for now
-    @State private var playerName: String = "Mitch" // Hardcoded player name for now
+    @State private var playerId: Int = 0 // Default to 0 until fetched
+    @State private var playerFirstName: String = "" // Default to empty until fetched
+    @State private var isLoggedIn: Bool = false
     @State private var programId: Int? = nil // Dynamically fetched programId
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
 
     var body: some View {
-        NavigationStack {
-            if isLoading {
-                ProgressView("Loading Program Data...")
-            } else if let errorMessage = errorMessage {
-                Text("Error: \(errorMessage)")
-                    .foregroundColor(.red)
+            if isLoggedIn {
+                NavigationStack {
+                    if isLoading {
+                        ProgressView("Loading Program Data...")
+                    } else if let errorMessage = errorMessage {
+                        Text("Error: \(errorMessage)")
+                            .foregroundColor(.red)
+                    } else {
+                        VStack(spacing: 20) {
+                            Text("Welcome, \(playerFirstName)!")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .padding()
+
+                            // Navigation blocks
+                            VStack(spacing: 20) {
+                                NavigationLink(value: NavigationDestination.myProfile) {
+                                    BlockView(title: "My Profile", color: .blue)
+                                }
+
+                                NavigationLink(value: NavigationDestination.workouts) {
+                                    BlockView(title: "Workouts", color: .green)
+                                }
+
+                                NavigationLink(value: NavigationDestination.throwing) {
+                                    BlockView(title: "Throwing", color: .orange)
+                                }
+                                .disabled(programId == nil)
+
+                                NavigationLink(value: NavigationDestination.nutrition) {
+                                    BlockView(title: "Nutrition", color: .purple)
+                                }
+
+                                NavigationLink(value: NavigationDestination.recovery) {
+                                    BlockView(title: "Recovery", color: .red)
+                                }
+                            }
+                            .padding()
+                        }
+                        .navigationDestination(for: NavigationDestination.self) { destination in
+                            switch destination {
+                            case .myProfile:
+                                MyProfileView(playerId: playerId)
+                            case .workouts:
+                                WorkoutsView(playerId: playerId, playerFirstName: playerFirstName)
+                            case .throwing:
+                                if let programId = programId {
+                                    ThrowingView(playerId: playerId, programId: programId)
+                                } else {
+                                    Text("Program ID not available")
+                                }
+                            case .nutrition:
+                                NutritionView()
+                            case .recovery:
+                                RecoveryView()
+                            }
+                        }
+                    }
+                }
+                .onAppear {
+                    fetchProgramData(playerId: playerId)
+                }
             } else {
-                VStack(spacing: 20) {
-                    Text("Welcome, \(playerName)!")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding()
-
-                    // Navigation blocks
-                    VStack(spacing: 20) {
-                        NavigationLink(value: NavigationDestination.myProfile) {
-                            BlockView(title: "My Profile", color: .blue)
-                        }
-
-                        NavigationLink(value: NavigationDestination.workouts) {
-                            BlockView(title: "Workouts", color: .green)
-                        }
-
-                        NavigationLink(value: NavigationDestination.throwing) {
-                            BlockView(title: "Throwing", color: .orange)
-                        }
-                        .disabled(programId == nil) // Disable if programId is nil
-
-                        NavigationLink(value: NavigationDestination.nutrition) {
-                            BlockView(title: "Nutrition", color: .purple)
-                        }
-
-                        NavigationLink(value: NavigationDestination.recovery) {
-                            BlockView(title: "Recovery", color: .red)
-                        }
-                    }
-                    .padding()
-                }
-                .navigationDestination(for: NavigationDestination.self) { destination in
-                    switch destination {
-                    case .myProfile:
-                        MyProfileView(playerId: playerId)
-                    case .workouts:
-                        WorkoutsView(playerId: playerId, playerName: playerName)
-                    case .throwing:
-                        if let programId = programId {
-                            ThrowingView(playerId: playerId, programId: programId)
-                        } else {
-                            Text("Program ID not available")
-                        }
-                    case .nutrition:
-                        NutritionView()
-                    case .recovery:
-                        RecoveryView()
-                    }
-                }
+                LoginView(playerId: $playerId, playerFirstName: $playerFirstName, isLoggedIn: $isLoggedIn)
             }
         }
-        .onAppear {
-            fetchProgramData(playerId: playerId)
-        }
-    }
+
 
     // Fetch program data for the hardcoded playerId
     private func fetchProgramData(playerId: Int) {

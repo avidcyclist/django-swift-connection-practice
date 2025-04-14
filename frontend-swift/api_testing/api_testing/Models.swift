@@ -210,10 +210,17 @@ struct PlayerThrowingProgramDay: Decodable, Identifiable {
 }
 
 struct Player: Codable {
-    let id: Int
-    let name: String
-    let age: Int
-    let team: String
+    let playerId: Int
+    let firstName: String
+    let lastName: String
+    let email: String
+
+    enum CodingKeys: String, CodingKey {
+        case playerId = "playerId"
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case email = "email"
+    }
 }
 
 struct ArmCareRoutineResponse: Codable {
@@ -255,4 +262,9 @@ struct ArmCareExercise: Codable, Identifiable {
         case setsReps = "sets_reps"
         case youtubeLink = "youtube_link"
     }
+}
+
+struct LoginResponse: Codable {
+    let token: String
+    let user: Player
 }
