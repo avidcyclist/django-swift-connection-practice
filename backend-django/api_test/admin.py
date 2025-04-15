@@ -1,8 +1,12 @@
+from django.utils.timezone import now
+
 from django.contrib import admin
 from django.forms import Textarea
 from django.db import models
 from .utils import clone_arm_care_routine_for_player
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
+from django.utils.html import format_html
+from django.urls import path
 
 from .models import (
     Player,
@@ -27,6 +31,7 @@ from .models import (
     PlayerArmCareExercise,
     PlayerArmCareRoutine,
     ArmCareExercise,
+    DailyIntake,
 )
 
 @admin.register(ActiveWarmup)
@@ -57,7 +62,74 @@ class WorkoutAdmin(admin.ModelAdmin):
     search_fields = ["exercise"]  # Allow searching by exercise name
 admin.site.register(Phase)
 
-admin.site.register(WorkoutLog)
+@admin.register(WorkoutLog)
+class WorkoutLogAdmin(admin.ModelAdmin):
+    list_display = ('player_name', 'phase_name', 'week', 'day', 'exercise_summary')
+    list_filter = ('player', 'phase', 'week', 'day')
+    search_fields = ('player__first_name', 'player__last_name', 'phase__name')
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('grouped-by-player/', self.grouped_by_player_view, name='grouped-by-player'),
+            path('player/<int:player_id>/workout-logs/', self.player_workout_logs_view, name='player-workout-logs'),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        # Redirect the default changelist view to the grouped-by-player view
+        return self.grouped_by_player_view(request)
+
+    def grouped_by_player_view(self, request):
+        # Display a list of players with links to their workout logs
+        players = Player.objects.all().order_by('last_name', 'first_name')
+        return render(request, "admin/player_list.html", {
+            "players": players,
+        })
+
+    def player_workout_logs_view(self, request, player_id):
+        # Display workout logs for a specific player
+        player = Player.objects.get(id=player_id)
+
+        # Get the current phase for the player
+        current_phase = PlayerPhase.objects.filter(
+            player=player,
+            start_date__lte=now(),
+            end_date__gte=now()
+        ).first()
+
+        if current_phase:
+            # Fetch workout logs only for the current phase
+            logs = WorkoutLog.objects.filter(
+                player=player,
+                phase=current_phase.phase
+            ).order_by('week', 'day')
+        else:
+            # If no current phase, return an empty list
+            logs = []
+
+        return render(request, "admin/player_workout_logs.html", {
+            "player": player,
+            "logs": logs,
+        })
+
+    def player_name(self, obj):
+        return f"{obj.player.first_name} {obj.player.last_name}"
+    player_name.short_description = 'Player'
+
+    def phase_name(self, obj):
+        return obj.phase.name
+    phase_name.short_description = 'Phase'
+
+    def exercise_summary(self, obj):
+        if not obj.exercises:
+            return "No exercises"
+        try:
+            return ", ".join([exercise['exercise'] for exercise in obj.exercises])
+        except (TypeError, KeyError):
+            return "Invalid exercise data"
+    exercise_summary.short_description = 'Exercises'
+
 admin.site.register(PhaseWorkout)
 admin.site.register(Corrective)
 
@@ -278,4 +350,13 @@ class ArmCareRoutineAdmin(admin.ModelAdmin):
     list_display = ("name", "description")
     inlines = [ArmCareExerciseInline]
     actions = [customize_for_player]
+    
+@admin.register(DailyIntake)
+class DailyIntakeAdmin(admin.ModelAdmin):
+    list_display = (
+        "player", "date", "arm_feel", "body_feel", "sleep_hours", 
+        "weight", "met_calorie_macros", "completed_day_plan", "comments"
+    )
+    list_filter = ("player", "date", "met_calorie_macros", "completed_day_plan")
+    search_fields = ("player__first_name", "player__last_name", "comments")
     

@@ -24,6 +24,7 @@ from .models import (
     ArmCareExercise,
     PlayerArmCareRoutine,
     PlayerArmCareExercise,
+    DailyIntake,
 )
 
 class ThrowingActiveWarmupSerializer(serializers.ModelSerializer):
@@ -234,3 +235,12 @@ class CustomLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['playerId', 'first_name', 'last_name', 'email']
+        
+class DailyIntakeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyIntake
+        fields = [
+            'id', 'player', 'date', 'arm_feel', 'body_feel', 'sleep_hours',
+            'weight', 'met_calorie_macros', 'completed_day_plan', 'comments'
+        ]
+        read_only_fields = ['id', 'player']

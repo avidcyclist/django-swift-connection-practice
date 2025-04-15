@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User  # Assuming Player is tied to the User model
 from django.core.validators import MinValueValidator
+from django.utils.timezone import now
 # Create your models here.
 
 class Workout(models.Model):
@@ -303,3 +304,19 @@ class PlayerArmCareExercise(models.Model):
         return f"{self.routine.routine.name} - {self.exercise}"
     
     
+class DailyIntake(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="daily_intakes")
+    date = models.DateField(default=now)  # Default to today's date
+    arm_feel = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])  # 1-5 scale
+    body_feel = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])  # 1-5 scale
+    sleep_hours = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)  # e.g., 7.5 hours
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # e.g., 180.5 lbs
+    met_calorie_macros = models.BooleanField(default=False)  # Checkbox for meeting calorie/macros
+    completed_day_plan = models.BooleanField(default=False)  # Checkbox for completing the day's plan
+    comments = models.TextField(blank=True, null=True)  # Optional comments/notes
+
+    class Meta:
+        unique_together = ('player', 'date')  # Ensure one log per player per day
+
+    def __str__(self):
+        return f"{self.player.first_name} {self.player.last_name} - {self.date}"

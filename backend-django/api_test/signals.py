@@ -25,9 +25,28 @@ def update_password_changed_flag(sender, request, user, **kwargs):
         user.profile.save()
         
 @receiver(post_save, sender=User)
-def create_player_for_user(sender, instance, created, **kwargs):
+def create_or_update_player_for_user(sender, instance, created, **kwargs):
     if created:
         # Automatically create a Player instance for the new User
-        Player.objects.create(user=instance, first_name=instance.first_name, last_name=instance.last_name, email=instance.email)      
-        
-        
+        Player.objects.create(
+            user=instance,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            email=instance.email
+        )
+    else:
+        # Update the Player instance if the User is updated
+        try:
+            player = instance.player  # Assuming a OneToOne relationship
+            player.first_name = instance.first_name
+            player.last_name = instance.last_name
+            player.email = instance.email
+            player.save()
+        except Player.DoesNotExist:
+            # If the Player instance doesn't exist, create it
+            Player.objects.create(
+                user=instance,
+                first_name=instance.first_name,
+                last_name=instance.last_name,
+                email=instance.email
+            )        

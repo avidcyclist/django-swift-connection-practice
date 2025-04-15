@@ -33,6 +33,10 @@ from .views import (
     PlayerArmCareRoutineGroupedByDayView,
     PasswordChangeView,
     CustomLoginView,
+    get_daily_intakes,
+    create_daily_intake,
+    update_daily_intake,
+
 )
 
 urlpatterns = [
@@ -76,5 +80,9 @@ urlpatterns = [
     path('api/password-change/', PasswordChangeView.as_view(), name='password-change'),
     #login views
     path('api/login/', CustomLoginView.as_view(), name='api_login'),
+    # Daily Intake URLs
+    path('api/daily-intakes/', get_daily_intakes, name='get-daily-intakes'),
+    path('api/daily-intakes/create/', create_daily_intake, name='create-daily-intake'),
+    path('api/daily-intakes/<int:log_id>/update/', update_daily_intake, name='update-daily-intake'),
 
 ]

@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Players</h1>
+<ul>
+    {% for player in players %}
+    <li>
+        <a href="{% url 'admin:player-workout-logs' player.id %}">
+            {{ player.first_name }} {{ player.last_name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

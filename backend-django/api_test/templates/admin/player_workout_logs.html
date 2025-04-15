@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Workout Logs for {{ player.first_name }} {{ player.last_name }}</h1>
+<table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+    <thead>
+        <tr>
+            <th style="border: 1px solid #ddd; padding: 8px;">Phase</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Week</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Day</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Exercises</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ log.phase.name }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ log.week }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ log.day }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+                <ul>
+                    {% for exercise in log.exercises %}
+                    <li>
+                        <strong>{{ exercise.exercise }}</strong>: 
+                        {% for set in exercise.sets %}
+                        Set {{ set.set_number }} - Weight: {{ set.weight }} lbs, RPE: {{ set.rpe }}
+                        {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'admin:grouped-by-player' %}">Back to Player List</a>
+{% endblock %}

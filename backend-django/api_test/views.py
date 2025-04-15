@@ -1,6 +1,6 @@
 
 # Create your views here.
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
@@ -27,6 +27,7 @@ from .models import (
     ArmCareRoutine,
     PlayerArmCareRoutine,
     PlayerArmCareExercise,
+    DailyIntake,
 )
 
 from .serializers import (
@@ -48,6 +49,7 @@ from .serializers import (
     ArmCareExerciseSerializer,
     PasswordChangeSerializer,
     CustomLoginSerializer,
+    DailyIntakeSerializer,
 )
 
 class PlayerInfoView(APIView):
@@ -610,3 +612,38 @@ class CustomLoginView(ObtainAuthToken):
             'token': token.key,
             'user': serializer.data
         })
+        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_daily_intakes(request):
+    player = request.user.player  # Assuming the user is linked to a Player
+    logs = DailyIntake.objects.filter(player=player).order_by('-date')
+    serializer = DailyIntakeSerializer(logs, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_daily_intake(request):
+    player = request.user.player  # Assuming the user is linked to a Player
+    data = request.data
+    data['player'] = player.id  # Add the player ID to the data
+    serializer = DailyIntakeSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_daily_intake(request, log_id):
+    player = request.user.player  # Assuming the user is linked to a Player
+    try:
+        log = DailyIntake.objects.get(id=log_id, player=player)
+    except DailyIntake.DoesNotExist:
+        return Response({"error": "Daily intake not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = DailyIntakeSerializer(log, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
