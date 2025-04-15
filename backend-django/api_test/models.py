@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User  # Assuming Player is tied to the User model
-
+from django.core.validators import MinValueValidator
 # Create your models here.
 
 class Workout(models.Model):
@@ -11,7 +11,7 @@ class Workout(models.Model):
         return self.exercise
     
 class Phase(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255, blank=False, null=False)  # Ensure name is required
 
     def __str__(self):
         return self.name
@@ -21,15 +21,15 @@ class UserProfile(models.Model):
     password_changed = models.BooleanField(default=False)  # Track if the password has been changed  
     
 class PhaseWorkout(models.Model):
-    phase = models.ForeignKey(Phase, on_delete=models.CASCADE, related_name="phase_workouts")  # Link to the phase
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE)  # Link to the workout
-    reps = models.IntegerField()  # Reps for this workout in the phase
-    sets = models.IntegerField()  # Sets for this workout in the phase
-    week = models.IntegerField()  # Week of the phase (1, 2, 3, etc.)
-    day = models.IntegerField()  # Day of the phase (1, 2, 3, etc.)
-    order = models.IntegerField(default=1)  # Order of the workout in the day
-    default_rpe = models.JSONField(default=list) 
-    
+    phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
+    reps = models.IntegerField(validators=[MinValueValidator(1)])  # Ensure reps are >= 1
+    sets = models.IntegerField(validators=[MinValueValidator(1)])  # Ensure sets are >= 1
+    week = models.IntegerField()
+    day = models.IntegerField()
+    order = models.IntegerField()
+    default_rpe = models.JSONField()
+
     def __str__(self):
         return f"{self.phase.name} - {self.workout.exercise} ({self.sets} sets x {self.reps} reps)"
     
@@ -243,14 +243,14 @@ class PlayerThrowingProgramDay(models.Model):
         return f"{self.player_program.player.first_name} {self.player_program.player.last_name}- Day {self.day_number}: {self.name}"
 
 
-    
+
 class ArmCareExercise(models.Model):
     routine = models.ForeignKey(ArmCareRoutine, on_delete=models.CASCADE, related_name="exercises")
-    day = models.IntegerField()  # e.g., "1" for Day 1
-    focus = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Shoulder/Cuff Strength"
-    exercise = models.CharField(max_length=255)  # e.g., "Crossover Symmetry"
-    sets_reps = models.CharField(max_length=50, blank=True, null=True)  # e.g., "1x10"
-    youtube_link = models.URLField(blank=True, null=True)  # Optional instructional video link
+    day = models.IntegerField(validators=[MinValueValidator(1)])  # Ensure day is >= 1
+    focus = models.CharField(max_length=255, blank=True, null=True)
+    exercise = models.CharField(max_length=255)
+    sets_reps = models.CharField(max_length=50, blank=True, null=True)
+    youtube_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.routine.name} - {self.exercise}"
