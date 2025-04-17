@@ -36,6 +36,7 @@ from .views import (
     get_daily_intakes,
     create_daily_intake,
     update_daily_intake,
+    update_workout_log_comments,
 
 )
 
@@ -84,5 +85,6 @@ urlpatterns = [
     path('api/daily-intakes/', get_daily_intakes, name='get-daily-intakes'),
     path('api/daily-intakes/create/', create_daily_intake, name='create-daily-intake'),
     path('api/daily-intakes/<int:log_id>/update/', update_daily_intake, name='update-daily-intake'),
+    path('api/workout-logs/<int:log_id>/update-comments/', update_workout_log_comments, name='update-workout-log-comments'),
 
 ]

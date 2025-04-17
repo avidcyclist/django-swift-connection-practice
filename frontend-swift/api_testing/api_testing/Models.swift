@@ -70,6 +70,7 @@ struct WorkoutLog: Decodable {
     let week: Int
     let day: Int
     let exercises: [Exercise]
+    let comments: String? // Add the comments field
 
     struct Exercise: Decodable {
         let exercise: String

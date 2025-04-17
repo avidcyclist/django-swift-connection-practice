@@ -647,3 +647,17 @@ def update_daily_intake(request, log_id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_workout_log_comments(request, log_id):
+    try:
+        log = WorkoutLog.objects.get(id=log_id)
+    except WorkoutLog.DoesNotExist:
+        return Response({"error": "Workout log not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+    log.comments = data.get('comments', log.comments)
+    log.save()
+    serializer = WorkoutLogSerializer(log)
+    return Response(serializer.data)

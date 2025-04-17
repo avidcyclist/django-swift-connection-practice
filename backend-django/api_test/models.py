@@ -144,6 +144,7 @@ class WorkoutLog(models.Model):
     week = models.IntegerField()  # Week number within the phase
     day = models.IntegerField()   # Day number within the week
     exercises = models.JSONField()  # Store all exercises and their sets as a JSON object
+    comments = models.TextField(blank=True, null=True)  # Add comments field for the day
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when the log is created
     updated_at = models.DateTimeField(auto_now=True)  # Automatically update when the log is modified
 
