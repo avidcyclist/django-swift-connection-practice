@@ -4,7 +4,7 @@ enum NavigationDestination: String, Hashable {
     case myProfile = "MyProfile"
     case workouts = "Workouts"
     case throwing = "Throwing"
-    case nutrition = "Nutrition"
+    case dailyIntake = "Daily Intake"
     case recovery = "Recovery"
 }
 
@@ -46,8 +46,8 @@ struct ContentView: View {
                                 }
                                 .disabled(programId == nil)
 
-                                NavigationLink(value: NavigationDestination.nutrition) {
-                                    BlockView(title: "Nutrition", color: .purple)
+                                NavigationLink(value: NavigationDestination.dailyIntake) {
+                                    BlockView(title: "Daily Intake", color: .purple)
                                 }
 
                                 NavigationLink(value: NavigationDestination.recovery) {
@@ -68,8 +68,8 @@ struct ContentView: View {
                                 } else {
                                     Text("Program ID not available")
                                 }
-                            case .nutrition:
-                                NutritionView()
+                            case .dailyIntake:
+                                DailyIntakeView(playerId: playerId)
                             case .recovery:
                                 RecoveryView()
                             }
@@ -123,15 +123,6 @@ struct ContentView: View {
                 isLoading = false
             }
         }.resume()
-    }
-}
-
-// Placeholder views for each section
-struct NutritionView: View {
-    var body: some View {
-        Text("Nutrition Page")
-            .font(.largeTitle)
-            .padding()
     }
 }
 

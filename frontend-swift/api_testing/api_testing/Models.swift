@@ -269,3 +269,27 @@ struct LoginResponse: Codable {
     let token: String
     let user: Player
 }
+
+struct DailyIntake: Codable, Identifiable {
+    let id: Int
+    let player: Int
+    let date: String // Use String to handle date formatting from the API
+    let armFeel: Int? // Optional, 1-5 scale
+    let bodyFeel: Int? // Optional, 1-5 scale
+    let sleepHours: Double? // Optional, e.g., 7.5 hours
+    let weight: Double? // Optional, e.g., 180.5 lbs
+    let metCalorieMacros: Bool // Checkbox for meeting calorie/macros
+    let completedDayPlan: Bool // Checkbox for completing the day's plan
+    let comments: String? // Optional comments/notes
+
+    enum CodingKeys: String, CodingKey {
+        case id, player, date
+        case armFeel = "arm_feel"
+        case bodyFeel = "body_feel"
+        case sleepHours = "sleep_hours"
+        case weight
+        case metCalorieMacros = "met_calorie_macros"
+        case completedDayPlan = "completed_day_plan"
+        case comments
+    }
+}
