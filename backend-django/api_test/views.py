@@ -107,13 +107,12 @@ class PlayerPhaseView(APIView):
 
 @api_view(['POST'])
 def save_workout_log(request):
-    print("Request data:", request.data)  # Debugging
-
     # Validate the incoming data
     player_id = request.data.get("player")
     exercises = request.data.get("exercises")
     week = request.data.get("week")
     day = request.data.get("day")
+    comments = request.data.get("comments", "")  # Get comments, default to an empty string if not provided
 
     if not player_id or not exercises or not week or not day:
         return Response({"error": "Missing required fields (player, exercises, week, day)."}, status=status.HTTP_400_BAD_REQUEST)
@@ -130,8 +129,17 @@ def save_workout_log(request):
         phase=player_phase.phase,
         week=week,
         day=day,
-        defaults={"exercises": exercises}
+        defaults={
+            "exercises": exercises,
+            "comments": comments,  # Add comments to the defaults
+        }
     )
+
+    # If the log already exists, update the comments and exercises
+    if not created:
+        workout_log.exercises = exercises
+        workout_log.comments = comments
+        workout_log.save()
 
     if created:
         return Response({"message": "Workout log created successfully!"}, status=status.HTTP_201_CREATED)
@@ -614,50 +622,79 @@ class CustomLoginView(ObtainAuthToken):
         })
         
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_daily_intakes(request):
-    player = request.user.player  # Assuming the user is linked to a Player
+    player_id = request.query_params.get('player_id')  # Get player_id from query parameters
+    if not player_id:
+        return Response({"error": "player_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        player = Player.objects.get(id=player_id)  # Fetch the Player instance by ID
+    except Player.DoesNotExist:
+        return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)
+
     logs = DailyIntake.objects.filter(player=player).order_by('-date')
     serializer = DailyIntakeSerializer(logs, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_daily_intake(request):
-    player = request.user.player  # Assuming the user is linked to a Player
+def save_daily_intake(request):
     data = request.data
-    data['player'] = player.id  # Add the player ID to the data
-    serializer = DailyIntakeSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    player_id = data.get('player_id')  # Get player_id from the request body
+
+    if not player_id:
+        return Response({"error": "player_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        player = Player.objects.get(id=player_id)  # Fetch the Player instance by ID
+    except Player.DoesNotExist:
+        return Response({"error": "Player not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    date = data.get('date', None)
+    if not date:
+        return Response({"error": "Date is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Round sleep_hours and weight to 2 decimal places before saving
+    sleep_hours = round(float(data.get('sleep_hours', 0)), 2) if data.get('sleep_hours') else None
+    weight = round(float(data.get('weight', 0)), 2) if data.get('weight') else None
+
+    # Use update_or_create to handle both create and update
+    daily_intake, created = DailyIntake.objects.update_or_create(
+        player=player,
+        date=date,
+        defaults={
+            'arm_feel': data.get('arm_feel'),
+            'body_feel': data.get('body_feel'),
+            'sleep_hours': sleep_hours,
+            'weight': weight,
+            'met_calorie_macros': data.get('met_calorie_macros'),
+            'completed_day_plan': data.get('completed_day_plan'),
+            'comments': data.get('comments'),
+        }
+    )
+
+    serializer = DailyIntakeSerializer(daily_intake)
+    return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_daily_intake(request, log_id):
-    player = request.user.player  # Assuming the user is linked to a Player
+def update_workout_log_comments(request, player_id, week, day):
     try:
-        log = DailyIntake.objects.get(id=log_id, player=player)
-    except DailyIntake.DoesNotExist:
-        return Response({"error": "Daily intake not found."}, status=status.HTTP_404_NOT_FOUND)
+        # Find all workout logs for the given player, week, and day
+        logs = WorkoutLog.objects.filter(player_id=player_id, week=week, day=day)
 
-    serializer = DailyIntakeSerializer(log, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not logs.exists():
+            return Response({"error": "Workout log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_workout_log_comments(request, log_id):
-    try:
-        log = WorkoutLog.objects.get(id=log_id)
-    except WorkoutLog.DoesNotExist:
-        return Response({"error": "Workout log not found."}, status=status.HTTP_404_NOT_FOUND)
+        # If multiple logs exist, handle them (e.g., update the first one or merge them)
+        log = logs.first()  # Use the first log for now
 
-    data = request.data
-    log.comments = data.get('comments', log.comments)
-    log.save()
-    serializer = WorkoutLogSerializer(log)
-    return Response(serializer.data)
+        # Update the comments
+        data = request.data
+        log.comments = data.get('comments', log.comments)
+        log.save()
+
+        # Return the updated log
+        serializer = WorkoutLogSerializer(log)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

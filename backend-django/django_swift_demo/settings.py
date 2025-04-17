@@ -139,3 +139,5 @@ EMAIL_USE_TLS = True  # Use TLS for secure connection
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # Your email address (e.g., example@gmail.com)
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # Your email password or app-specific password
 DEFAULT_FROM_EMAIL = 'Ks Remote App <noreply@example.com>'  # Sender name and email
+
+

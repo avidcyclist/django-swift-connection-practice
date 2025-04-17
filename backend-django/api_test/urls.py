@@ -34,8 +34,7 @@ from .views import (
     PasswordChangeView,
     CustomLoginView,
     get_daily_intakes,
-    create_daily_intake,
-    update_daily_intake,
+    save_daily_intake,
     update_workout_log_comments,
 
 )
@@ -83,8 +82,7 @@ urlpatterns = [
     path('api/login/', CustomLoginView.as_view(), name='api_login'),
     # Daily Intake URLs
     path('api/daily-intakes/', get_daily_intakes, name='get-daily-intakes'),
-    path('api/daily-intakes/create/', create_daily_intake, name='create-daily-intake'),
-    path('api/daily-intakes/<int:log_id>/update/', update_daily_intake, name='update-daily-intake'),
-    path('api/workout-logs/<int:log_id>/update-comments/', update_workout_log_comments, name='update-workout-log-comments'),
+    path('api/daily-intakes/save/', save_daily_intake, name='save-daily-intake'),
+    path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/update-comments/', update_workout_log_comments, name='update-workout-log-comments'),
 
 ]

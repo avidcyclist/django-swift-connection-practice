@@ -9,6 +9,7 @@
             <th style="border: 1px solid #ddd; padding: 8px;">Week</th>
             <th style="border: 1px solid #ddd; padding: 8px;">Day</th>
             <th style="border: 1px solid #ddd; padding: 8px;">Exercises</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Comments</th> <!-- Added Comments Column -->
         </tr>
     </thead>
     <tbody>
@@ -30,6 +31,7 @@
                     {% endfor %}
                 </ul>
             </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ log.comments|default:"No comments" }}</td> <!-- Display Comments -->
         </tr>
         {% endfor %}
     </tbody>

@@ -236,6 +236,7 @@ class CustomLoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['playerId', 'first_name', 'last_name', 'email']
         
+
 class DailyIntakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyIntake
@@ -244,3 +245,14 @@ class DailyIntakeSerializer(serializers.ModelSerializer):
             'weight', 'met_calorie_macros', 'completed_day_plan', 'comments'
         ]
         read_only_fields = ['id', 'player']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Convert DecimalField values to float and round to 2 decimal places
+        representation['sleep_hours'] = (
+            round(float(representation['sleep_hours']), 2) if representation['sleep_hours'] else None
+        )
+        representation['weight'] = (
+            round(float(representation['weight']), 2) if representation['weight'] else None
+        )
+        return representation

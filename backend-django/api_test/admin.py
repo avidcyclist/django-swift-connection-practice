@@ -64,10 +64,11 @@ admin.site.register(Phase)
 
 @admin.register(WorkoutLog)
 class WorkoutLogAdmin(admin.ModelAdmin):
-    list_display = ('player_name', 'phase_name', 'week', 'day', 'exercise_summary')
+    list_display = ('player_name', 'phase_name', 'week', 'day', 'exercise_summary', 'comments')  # Added 'comments'
     list_filter = ('player', 'phase', 'week', 'day')
-    search_fields = ('player__first_name', 'player__last_name', 'phase__name')
-
+    search_fields = ('player__first_name', 'player__last_name', 'phase__name', 'comments')  # Added 'comments'
+    fields = ('player', 'phase', 'week', 'day', 'exercises', 'comments')  # Explicitly include 'comments'
+    
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
