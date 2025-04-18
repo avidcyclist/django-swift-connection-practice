@@ -141,3 +141,17 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # Your email password or ap
 DEFAULT_FROM_EMAIL = 'Ks Remote App <noreply@example.com>'  # Sender name and email
 
 
+
+REST_FRAMEWORK = {
+    # Use TokenAuthentication for securing API endpoints
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    # Default permission class (can be overridden per view)
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # Optional: Add pagination settings if needed
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Number of items per page
+}

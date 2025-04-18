@@ -35,22 +35,21 @@ from .views import (
     CustomLoginView,
     get_daily_intakes,
     save_daily_intake,
-    update_workout_log_comments,
 
 )
 
 urlpatterns = [
     path('api/player-info/<int:player_id>/', PlayerInfoView.as_view(), name='player-info'),
     path('api/player-workout/', WorkoutView.as_view(), name='player-workout'),
-    path('api/player-phases/<int:player_id>/', PlayerPhaseView.as_view(), name='player-phases'),
+    path('api/player-phases/', PlayerPhaseView.as_view(), name='player-phases'),
     path('api/save-workout-log/', save_workout_log, name='save-workout-log'),
-    path('api/get-workout-logs/<int:player_id>/', get_workout_logs, name='get-workout-logs'),
+    path('api/get-workout-logs/', get_workout_logs, name='get-workout-logs'),
     path('api/players/', get_players, name='get_players'),
-    path('api/player/<int:player_id>/correctives/', get_player_correctives, name='get-player-correctives'),
-    path('api/player-phases/<int:player_id>/workouts-by-day/', get_phase_workouts_by_day, name='workouts-by-day'),
-    path('api/player-phases/<int:player_id>/workouts-by-week/', get_phase_workouts_by_week, name='workouts-by-week'),
-    path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
-    path('api/player-warmup/<int:player_id>/', PlayerWarmupView.as_view(), name='get-active-warmup'),
+    path('api/player/correctives/', get_player_correctives, name='get-player-correctives'),
+    path('api/player-phases/workouts-by-day/', get_phase_workouts_by_day, name='workouts-by-day'),
+    path('api/player-phases/workouts-by-week/', get_phase_workouts_by_week, name='workouts-by-week'),
+    path('api/get-workout-log/<int:week>/<int:day>/', GetWorkoutLogView.as_view(), name='get-workout-log'),
+    path('api/player-warmup/', PlayerWarmupView.as_view(), name='get-active-warmup'),
     #throwing views
     path("api/throwing-programs/", ThrowingProgramListView.as_view(), name="throwing-program-list"),
     path("api/throwing-programs/<int:pk>/", ThrowingProgramDetailView.as_view(), name="throwing-program-detail"),
@@ -60,14 +59,14 @@ urlpatterns = [
     # Throwing routines
     path("api/throwing-routines/", ThrowingRoutineListView.as_view(), name="throwing-routine-list"),
     path("api/throwing-routines/<int:pk>/", ThrowingRoutineDetailView.as_view(), name="throwing-routine-detail"),
-    path('api/player/throwing-active-warmups/<int:player_id>/', get_player_throwing_active_warmups, name='get-player-throwing-active-warmups'),
+    path('api/player/throwing-active-warmups/', get_player_throwing_active_warmups, name='get-player-throwing-active-warmups'),
     path('api/player-throwing-programs/weeks/<int:program_id>/', get_player_throwing_program_weeks, name='get-player-throwing-program-weeks'),
      # ArmCareRoutine URLs
     path("api/arm-care-routines/", ArmCareRoutineListView.as_view(), name="arm-care-routine-list"),
     path("api/arm-care-routines/<int:pk>/", ArmCareRoutineDetailView.as_view(), name="arm-care-routine-detail"),
 
     # PlayerArmCareRoutine URLs
-    path("api/players/arm-care-routines/<int:player_id>/", PlayerArmCareRoutineListView.as_view(), name="player-arm-care-routine-list"),
+    path("api/players/arm-care-routines/", PlayerArmCareRoutineListView.as_view(), name="player-arm-care-routine-list"),
     path("api/player-arm-care-routines/<int:pk>/", PlayerArmCareRoutineDetailView.as_view(), name="player-arm-care-routine-detail"),
     # New grouped-by-day views
     path("api/arm-care-routines/grouped-by-day/<int:routine_id>/", ArmCareRoutineGroupedByDayView.as_view(), name="arm-care-routine-grouped-by-day"),
@@ -83,6 +82,5 @@ urlpatterns = [
     # Daily Intake URLs
     path('api/daily-intakes/', get_daily_intakes, name='get-daily-intakes'),
     path('api/daily-intakes/save/', save_daily_intake, name='save-daily-intake'),
-    path('api/get-workout-log/<int:player_id>/<int:week>/<int:day>/update-comments/', update_workout_log_comments, name='update-workout-log-comments'),
 
 ]
